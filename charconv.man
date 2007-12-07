@@ -1,0 +1,79 @@
+.TH CHARCONV 1 "14 June 1996" 
+.SH NAME
+charconv \- Conversion of characters between various systems
+.SH SYNOPSIS
+\fBcharconv\fP [-d|-m|-u] [-f \fIfrom_table\fP] [-t \fIto_table\fP]
+[[-i] \fIinput_file\fP [-o] \fIoutput_file\fP]
+.SH "DESCRIPTION"
+CHARCONV is a program or filter that allows the transformation of
+one encoding of an extended character set (e.g., ISO Latin-1) to
+another. Note that the encoding of umlauts, diphthongs, or diacritics
+is quite different in ISO Latin-1 (Unix, MS Windows),
+MS DOS (code page 437) or Apple Macintosh. Moreover, this program
+takes care of transcriptions used in TeX or HTML (hypertext markup
+language). Internally, a font description similar to the TeX code
+(but without math mode) is used. Tags and macros are removed from
+HTML and TeX input.
+.LP
+Furthermore, the program allows conversion between different
+end-of-line markers (Unix: LF, DOS: CRLF, Mac: CR).
+.SH OPTIONS
+\fBcharconv\fP [-d|-m|-u] [-f \fIfrom_table\fP] [-t \fIto_table\fP]
+[[-i] \fIinput_file\fP [-o] \fIoutput_file\fP]
+.LP
+.IP \fB-d\fP
+create MS DOS end-of-line (CRLF)
+.IP \fB-m\fP
+create Macintosh end-of-line (CR)
+.IP \fB-u\fP
+create Unix end-of-line (LF)
+.IP \fB-f\fP
+\fIfrom_table\fP
+.IP \fB-t\fP
+\fIto_table\fP
+.PP
+from/to character table, where from_table/to_table is one of:
+.LP
+.in +4m
+.nf
+  a - ASCII (7 bit) (*)
+  c - transcription (*)
+  d - DOS code page 437
+  e - EBCDIC (only for ASCII <-> EBCDIC!)
+  g - German LaTeX (cf. TeX) (*)
+  h - HTML (hypertext) (*)
+  H - HTML (keep < & >) (*)
+  l - ISO Latin 1 (Unix, ANSI, MS Windows)
+  L - LaTeX (cf. TeX) (*)
+  m - Apple Macintosh
+  r - RTF (Rich Text Format) (output only!)
+  s - SGML (Standard Generalized Markup Language) (*)
+  S - Symbol font
+  t - TeX (*)
+  z - Atari ST
+    (*) string code
+.fi
+.in -4m
+.LP
+.SH EXAMPLES
+.nf
+      charconv -ft myfile.tex
+         (de-texify file, using umlauts of current system)
+      charconv -ft -th myfile.tex myfile.html
+         (convert from TeX to HTML)
+      charconv -m -fd -tm dos.txt mac_txt
+         (convert from "DOS" to "Macintosh")
+      cat myfile.html | charconv -fh | less -r
+.fi
+.SH FILES
+.nf
+\fI/usr/local/bin/charconv\fR  binary
+\fI/usr/local/man/man1/charconv.1\fR man page
+.fi
+.SH BUGS
+(probably)
+.SH RESTRICTIONS
+Note: the text is not formatted. RTF output assumes ISO Latin-1 coding,
+end-of-line markers are not changed.
+.SH AUTHOR
+Burkhard Kirste (kirste@chemie.fu-berlin.de)

@@ -1,0 +1,57 @@
+.AUTODEPEND
+
+#		*Translator Definitions*
+CC = bcc +CHARCONV.CFG
+TASM = TASM
+TLIB = tlib
+TLINK = tlink
+LIBPATH = D:\BC\LIB
+INCLUDEPATH = D:\BC\INCLUDE
+
+
+#		*Implicit Rules*
+.c.obj:
+  $(CC) -c {$< }
+
+.cpp.obj:
+  $(CC) -c {$< }
+
+#		*List Macros*
+
+
+EXE_dependencies =  \
+ charconv.obj \
+ getopt.obj
+
+#		*Explicit Rules*
+charconv.exe: charconv.cfg $(EXE_dependencies)
+  $(TLINK) /v/x/c/P-/L$(LIBPATH) @&&|
+c0s.obj+
+charconv.obj+
+getopt.obj
+charconv
+		# no map file
+cs.lib
+|
+
+
+#		*Individual File Dependencies*
+charconv.obj: charconv.cfg charconv.c 
+
+getopt.obj: charconv.cfg getopt.c 
+
+#		*Compiler Configuration File*
+charconv.cfg: makefile.bcc
+  copy &&|
+-2
+-f-
+-v
+-vi-
+-wpro
+-weas
+-wpre
+-I$(INCLUDEPATH)
+-L$(LIBPATH)
+| charconv.cfg
+
+

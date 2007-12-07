@@ -1,0 +1,35 @@
+CHARCONV is a program or filter that allows the transformation of
+one encoding of an extended character set (e.g., ISO Latin-1) to
+another (e.g., MS DOS, Macintosh). Note that the encoding of umlauts,
+diphthongs, or diacritics is quite different in ISO Latin-1
+(Unix, MS Windows), MS DOS (code page 437) or Apple Macintosh.
+
+Moreover, this program takes care of transcriptions used in TeX or HTML
+(hypertext markup language). Internally, a font description similar to the
+TeX code (but without math mode) is used. Tags and macros are removed
+from HTML and TeX input. (With respect to TeX, the resulting plain
+text file is similar to that produced by utilities such as "detex" or
+"unretex", but umlauts are taken into account.)
+
+Furthermore, the program allows conversion between different
+end-of-line markers (Unix: LF, DOS: CRLF, Mac: CR).
+
+However, the text is not formatted.
+
+Installation:
+
+The file "sys_def.h" tries to define the system (and includes stdio.h);
+it may have to be edited.
+To install, look at the Makefile, edit the paths etc., type "make".
+(Followed by "make install" and "make install.man".)
+
+The program has been compiled successfully on the following systems:
+
+Sun Sparc running SunOS 4.1.1 with cc or gcc
+SGI Iris Indigo running IRIX 4.0.5F
+IBM RS/6000 running AIX 3.2
+CDC 4680 running EP/IX 2.1.1
+IBM PC running DOS with Borland C++ 3.1
+Atari ST with Turbo C 2.0
+
+Burkhard Kirste (kirste@chemie.fu-berlin.de)
