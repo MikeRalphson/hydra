@@ -1,0 +1,39 @@
+.TH COOKIE 6
+.SH NAME
+cookie \- show a fortune cookie
+.SH SYNOPSIS
+.B cookie
+[ cookie-file hash-file ]
+.sp
+.B /usr/local/lib/cookhash
+< sayings > hash-file
+.SH DESCRIPTION
+.I Cookie
+shows the user a randomly chosen quote from a file containing
+fortune cookies, sayings, jokes, aphorisms, quotes and so on.
+.P
+Cookie can also be executed with two arguments, the name of a cookie
+file
+followed by the name of its hash file.
+.P
+To create the hash file, use
+.I /usr/local/lib/cookhash
+which reads the sayings from standard input and writes the hash values
+to
+standard output. (The hash file contains the ASCII-formatted addresses
+of
+the cookies found in the cookie file.  It is used by 
+.I cookie
+to look up cookies quickly and to help to insure that all cookies are
+equally likely to be chosen.)
+.P
+Sayings within the input file are separated by lines containing 
+.B %% .
+.SH SEE ALSO
+fortune(6)
+.SH FILES
+/usr/local/lib/sayings, /usr/local/lib/sayhash
+.SH AUTHOR
+Karl Lehenbauer (karl@sugar.hackercorp.com),
+Missouri City, Texas, USA
+

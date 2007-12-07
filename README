@@ -1,0 +1,106 @@
+
+The third release of "cookie"   20-Oct-1990
+-------------------------------------------
+
+Cookie is a program to randomly retrieve cookies from a fortune cookie file.
+Each cookie can contain an arbitrary number of lines of text.  By generating
+a small "hash" file containing the addresses of each cookie in the cookie
+file, cookie has a high-performance way to look up cookies, plus it is "fair,"
+which is to say that short cookies are equally as likely to be selected as 
+long ones.  (The technique of simply randomly seeking into the cookie file
+and looking backwards and forwards from there to find the beginning and
+end of the cookie text would bias the cookie program toward large cookies.)
+
+This is the same code as in my second release, but it's been almost two years
+since that release and I've gotten numerous requests for the program, plus
+I'm about to pump out a batch of new cookies, plus there wern't alt.sources
+archives (that I'm aware of) then, plus there's a manpage now, blah blah
+blah.  Flames via email or alt.sources.d if you must...
+
+The code is again released into the public domain without restriction.
+I ask that you retain my name in the source code if you redistribute
+this stuff,
+and that you redistribute source along with binaries.
+
+No warranties are expressed or implied -- this is free code.  We do not
+have
+a contract.
+
+The code is written for System V but the only area of incompatibility
+should be
+the rand() function.  Only minor hacking should be necessary to port to
+BSD,
+for example.  (If someone gets the urge, please make a version that
+works
+with #ifdefs for both, test the BSD version and forward it back to me,
+OK?)
+
+It should be possible to make cookie work pretty painlessly on MS-DOS,
+Minix,
+etc.  Tested updates for popular and not-overwhelmingly-twisted systems,
+with
+#ifdefs, are solicited.  I seem to recall that cookie works as-is on the
+Amiga.
+
+To use, unshar this archive and do a 'make' to compile 'cookie' and
+'cookhash'.
+
+Then collect a bunch of cookies.  Eric Townsend just posted quite a few
+to
+alt.sources.  I will be posting a couple of new batches.  I hope to
+post
+information soon to alt.sources.d as to where an archive site for all
+my
+cookies (pushing 500 KB) can be found.
+
+Cookies are separated by lines containing two percent-signs and nothing
+else, for example:
+
+"I just thought of something funny, your mother."
+-- Cheech Marin
+%%
+"He can shout, don't hear you."
+-- The Firesign Theatre
+%%
+
+...and so forth.
+
+The include file "cookie.h" defines the location of the cookie file as
+being
+"/usr/local/lib/sayings".  If you want to put it elsewhere, change
+cookie.h
+and rebuild 'cookie'.  
+
+Cookie needs a hash file for the cookie file, by default called
+"/usr/local/lib/sayhash".  This is created by the 'cookhash' program.
+Cookhash is simply a filter that reads a cookie file in as stdin and
+writes
+a cookie hash file to stdout.  Thus, if you've moved the cookie file to
+/usr/local/lib, 'cd' there and do a "cookhash <sayings >sayhash" to
+create the 
+hash file.
+
+After that, 'cookie' should produce a cookie.  Cookie can also be
+executed
+with two arguments, the name of a cookie file followed by the name of
+its hash file, useful for creating aliases for alternate cookie files
+so
+you can get just Zippy the Pinhead quotes, for example.
+
+If you find quotes in the file that are unattributed and you know the
+attributions, please mail them to karl@sugar.hackercorp.com or
+uunet!sugar!karl
+
+I also collect cookies.  If you see good ones, please forward them.  (If
+you
+got them from me, please don't!)
+
+A lot of people think it's fun to get a cookie every time they log in,
+so 
+they put "cookie" in their .profile or .login file.
+
+Regards,
+Karl (karl@sugar.hackercorp.com) @ The Hacker's Haven, Missouri City,
+Texas 
+(The name will be changing because hacker has lost its old meaning --
+sigh)
