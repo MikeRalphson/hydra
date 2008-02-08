@@ -1,0 +1,56 @@
+PROJ = mpack
+
+# the following lines are for IBM CSet++ with debugging turned on
+
+#CC        = icc
+#CCFLAGS   = -Ti
+#LINKFLAGS = -Ti -B"/runfromvdm"
+#EXEFLAG   = -Fe
+#ADDFILES  = getopt.c
+
+# the following lines are for IBM CSet++
+
+CC        = icc
+CCFLAGS   = 
+LINKFLAGS = -B"/runfromvdm"
+EXEFLAG   = -Fe
+ADDFILES  = getopt.c 
+
+# the following lines are for EMX + GCC
+
+#CC        = gcc
+#CCFLAGS   = -Zomf
+#LINKFLAGS = -Zomf -Zlinker /runfromvdm -Zlinker /pm:vio
+#EXEFLAG   = -o
+#ADDFILES  = 
+
+# The rest is common to both compilers
+
+FILES  = codes.c os2os.c os2pk.c encode.c magic.c string.c xmalloc.c \
+         md5c.c $(ADDFILES)
+
+OBJS  = $(FILES:.c=.obj)
+
+all: $(PROJ).exe
+
+clean:
+	-del *.obj
+	-del *.exe
+
+.SUFFIXES: .obj .c
+
+codes.obj : codes.c xmalloc.h md5.h
+os2os.obj : os2os.c xmalloc.h common.h
+getopt.obj : getopt.c
+string.obj : string.c
+xmalloc.obj : xmalloc.c
+md5c.obj : md5c.c md5.h
+os2pk.obj : os2pk.c version.h xmalloc.h
+encode.obj : encode.c
+magic.obj : magic.c
+
+$(PROJ).exe : $(OBJS)
+	$(CC) $(EXEFLAG) $(PROJ).exe $(LINKFLAGS) $(OBJS)
+
+.c.obj :
+	$(CC) -c $(CCFLAGS) $*.c

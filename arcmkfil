@@ -1,0 +1,56 @@
+# Project:   mpack
+
+
+# Toolflags:
+CCflags = -c -depend !Depend -IUnix: -JUnix: -throwback 
+Linkflags = -o $@
+ObjAsmflags = -depend !Depend -ThrowBack -Stamp -quit -CloseExec
+CMHGflags = 
+LibFileflags = -c -o $@
+Squeezeflags = -o $@
+AAsmflags = -depend !Depend -quit -CloseExec -To $@ -From
+
+
+# Final targets:
+@.munpack:   @.o.arcos @.o.arcunpk @.o.codes @.o.decode @.o.getopt @.o.md5c \
+        @.o.string @.o.uudecode @.o.xmalloc @.o.part Unix:o.UnixLib 
+        link $(linkflags) @.o.arcos @.o.arcunpk @.o.codes @.o.decode \
+        @.o.getopt @.o.md5c @.o.string @.o.uudecode @.o.xmalloc @.o.part Unix:o.UnixLib 
+@.mpack:   @.o.arcos @.o.xmalloc @.o.string @.o.magic @.o.md5c @.o.getopt \
+        @.o.encode @.o.arcpk @.o.codes @.o.part Unix:o.UnixLib 
+        link $(linkflags) @.o.arcos @.o.xmalloc @.o.string @.o.magic @.o.md5c \
+        @.o.getopt @.o.encode @.o.arcpk @.o.codes @.o.part Unix:o.UnixLib 
+
+
+# User-editable dependencies:
+
+# Static dependencies:
+@.o.arcos:   @.c.arcos
+        cc $(ccflags) -o @.o.arcos @.c.arcos 
+@.o.xmalloc:   @.c.xmalloc
+        cc $(ccflags) -o @.o.xmalloc @.c.xmalloc 
+@.o.string:   @.c.string
+        cc $(ccflags) -o @.o.string @.c.string 
+@.o.magic:   @.c.magic
+        cc $(ccflags) -o @.o.magic @.c.magic 
+@.o.md5c:   @.c.md5c
+        cc $(ccflags) -o @.o.md5c @.c.md5c 
+@.o.getopt:   @.c.getopt
+        cc $(ccflags) -o @.o.getopt @.c.getopt 
+@.o.encode:   @.c.encode
+        cc $(ccflags) -o @.o.encode @.c.encode 
+@.o.arcpk:   @.c.arcpk
+        cc $(ccflags) -o @.o.arcpk @.c.arcpk 
+@.o.codes:   @.c.codes
+        cc $(ccflags) -o @.o.codes @.c.codes 
+@.o.arcunpk:   @.c.arcunpk
+        cc $(ccflags) -o @.o.arcunpk @.c.arcunpk 
+@.o.decode:   @.c.decode
+        cc $(ccflags) -o @.o.decode @.c.decode 
+@.o.uudecode:   @.c.uudecode
+        cc $(ccflags) -o @.o.uudecode @.c.uudecode 
+@.o.part:   @.c.part
+        cc $(ccflags) -o @.o.part @.c.part 
+
+
+# Dynamic dependencies:
