@@ -1,7 +1,7 @@
 /* (C) Copyright 1993,1994 by Carnegie Mellon University
  * All Rights Reserved.
  *
-ww * Permission to use, copy, modify, distribute, and sell this software
+ * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
  * fee, provided that the above copyright notice appear in all copies
  * and that both that copyright notice and this permission notice
@@ -37,9 +37,11 @@ extern int errno;
 extern int optind;
 extern char *optarg;
 
-main(argc, argv)
-int argc;
-char **argv;
+void usage(void);
+void sendmail(FILE *infile, char **addr, int start);
+void inews(FILE *infile);
+
+int main(int argc, char **argv)
 {
     int opt;
     char *fname = 0;
@@ -95,12 +97,12 @@ char **argv;
     }
 
     if (ctype) {
-	if (!cistrncmp(ctype, "text/", 5)) {
+	if (!strncasecmp(ctype, "text/", 5)) {
 	    fprintf(stderr, "This program is not appropriate for encoding textual data\n");
 	    exit(1);
 	}
-	if (cistrncmp(ctype, "application/", 12) && cistrncmp(ctype, "audio/", 6) &&
-	    cistrncmp(ctype, "image/", 6) && cistrncmp(ctype, "video/", 6)) {
+	if (strncasecmp(ctype, "application/", 12) && strncasecmp(ctype, "audio/", 6) &&
+	    strncasecmp(ctype, "image/", 6) && strncasecmp(ctype, "video/", 6)) {
 	    fprintf(stderr, "Content type must be subtype of application, audio, image, or video\n");
 	    exit(1);
 	}
@@ -162,7 +164,7 @@ char **argv;
 	    strcpy(fnamebuf, getenv("TMPDIR"));
 	}
 	else {
-	    strcpy(fnamebuf, "/tmp");
+	    strcpy(fnamebuf, "/usr/tmp");
 	}
 	strcat(fnamebuf, "/mpackXXXXXX");
 	mktemp(fnamebuf);
@@ -195,7 +197,7 @@ char **argv;
 		continue;
 	    }
 	    if (newsgroups) {
-		inews(infile, newsgroups);
+		inews(infile);
 	    }
 	    else {
 		sendmail(infile, argv, optind);
@@ -208,7 +210,7 @@ char **argv;
     exit(0);
 }
 
-usage()
+void usage(void)
 {
     fprintf(stderr, "mpack version %s\n", MPACK_VERSION);
     fprintf(stderr, 
@@ -220,10 +222,7 @@ usage()
     exit(1);
 }
 
-sendmail(infile, addr, start)
-FILE *infile;
-char **addr;
-int start;
+void sendmail(FILE *infile, char **addr, int start)
 {
     int status;
     int pid;
@@ -262,8 +261,7 @@ int start;
     _exit(1);
 }
 
-inews(infile)
-FILE *infile;
+void inews(FILE *infile)
 {
     int status;
     int pid;
@@ -294,7 +292,7 @@ FILE *infile;
     _exit(1);
 }
 
-warn()
+void warn(void)
 {
     abort();
 }

@@ -41,12 +41,11 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.  */
 #include "xmalloc.h"
 #include "md5.h"
 
+void output64chunk(int c1, int c2, int c3, int pads, FILE *outfile);
 static char basis_64[] =
    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-int to64(infile, outfile, limit) 
-FILE *infile, *outfile;
-long limit;
+int to64(FILE *infile, FILE *outfile, long int limit)
 {
     int c1, c2, c3, ct=0, written=0;
 
@@ -82,8 +81,7 @@ long limit;
     return written + ct;
 }
 
-output64chunk(c1, c2, c3, pads, outfile)
-FILE *outfile;
+void output64chunk(int c1, int c2, int c3, int pads, FILE *outfile)
 {
     putc(basis_64[c1>>2], outfile);
     putc(basis_64[((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4)], outfile);
@@ -99,8 +97,7 @@ FILE *outfile;
     }
 }
 
-char *md5contextTo64(context)
-MD5_CTX *context;
+char *md5contextTo64(MD5_CTX *context)
 {
     unsigned char digest[18];
     char encodedDigest[25];
@@ -123,9 +120,7 @@ MD5_CTX *context;
     return strsave(encodedDigest);
 }    
 
-char *md5digest(infile, len)
-FILE *infile;
-long *len;
+char *md5digest(FILE *infile, long int *len)
 {
     MD5_CTX context;
     char buf[1000];

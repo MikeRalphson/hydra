@@ -33,27 +33,26 @@
 #include "part.h"
 #include "md5.h"
 
-extern char *os_idtodir();
-extern FILE *os_newtypedfile();
-extern char *md5contextTo64();
+extern char *os_idtodir(char *id);
+extern FILE *os_newtypedfile(char *fname, char *contentType, int flags, params contentParams);
+extern FILE *os_createnewfile(char *fname);
+extern char *md5contextTo64(MD5_CTX *context);
 
 /* The possible content transfer encodings */
 enum encoding { enc_none, enc_qp, enc_base64 };
 
-char *ParseHeaders();
-enum encoding parseEncoding();
-params ParseContent();
-char *getParam();
-char *getDispositionFilename();
-
+char *ParseHeaders(struct part *inpart, char **subjectp, char **contentTypep, enum encoding *contentEncodingp, char **contentDispositionp, char **contentMD5p);
+enum encoding parseEncoding(char *s);
+params ParseContent(char **headerp);
+char *getParam(params cParams, char *key);
+char *getDispositionFilename(char *disposition);
+void from64(struct part *inpart, FILE *outfile, char **digestp, int suppressCR);
+void fromqp(struct part *inpart, FILE *outfile, char **digestp);
+void fromnone(struct part *inpart, FILE *outfile, char **digestp);
 /*
  * Read and handle an RFC 822 message from the body-part 'inpart'.
  */
-handleMessage(inpart, defaultContentType, inAppleDouble, extractText)
-struct part *inpart;
-char *defaultContentType;
-int inAppleDouble;
-int extractText;
+int handleMessage(struct part *inpart, char *defaultContentType, int inAppleDouble, int extractText)
 {
     char *headers, *subject, *contentType, *contentDisposition, *contentMD5;
     enum encoding contentEncoding;
@@ -70,7 +69,7 @@ int extractText;
     }
     contentParams = ParseContent(&contentType);
 
-    if (!cistrcmp(contentType, "message/rfc822")) {
+    if (!strcasecmp(contentType, "message/rfc822")) {
 	if (contentEncoding != enc_none) {
 	    warn("ignoring invalid content encoding on message/rfc822");
 	}
@@ -78,17 +77,17 @@ int extractText;
 	/* Simple recursion */
 	return handleMessage(inpart, "text/plain", 0, extractText);
     }
-    else if (!cistrcmp(contentType, "message/partial")) {
+    else if (!strcasecmp(contentType, "message/partial")) {
 	if (contentEncoding != enc_none) {
 	    warn("ignoring invalid content encoding on message/partial");
 	}
 	return handlePartial(inpart, headers, contentParams, extractText);
     }
-    else if (!cistrncmp(contentType, "message/", 8)) {
+    else if (!strncasecmp(contentType, "message/", 8)) {
 	/* Probably message/external.  We don't care--toss it */
 	return ignoreMessage(inpart);
     }
-    else if (!cistrncmp(contentType, "multipart/", 10)) {
+    else if (!strncasecmp(contentType, "multipart/", 10)) {
 	if (contentEncoding != enc_none) {
 	    warn("ignoring invalid content encoding on multipart");
 	}
@@ -96,7 +95,7 @@ int extractText;
 			       extractText);
     }
     else if (part_depth(inpart) == 0 &&
-	     !cistrncmp(contentType, "text/", 5) &&
+	     !strncasecmp(contentType, "text/", 5) &&
 	     contentEncoding == enc_none &&
 	     !getDispositionFilename(contentDisposition) &&
 	     !getParam(contentParams, "name")) {
@@ -104,7 +103,7 @@ int extractText;
 	return handleUuencode(inpart, subject, extractText);
     }
     else if (!extractText && !inAppleDouble &&
-	     !cistrncmp(contentType, "text/", 5) &&
+	     !strncasecmp(contentType, "text/", 5) &&
 	     !getDispositionFilename(contentDisposition) &&
 	     !getParam(contentParams, "name")) {
 	return handleText(inpart, contentEncoding);
@@ -119,8 +118,7 @@ int extractText;
 /*
  * Skip whitespace and RFC-822 comments.
  */
-SkipWhitespace(s)
-char **s;
+void SkipWhitespace(char **s)
 {
     char *p = *s;
     int commentlevel = 0;
@@ -181,12 +179,7 @@ char **s;
  * in the enum pointed to by 'contentEncodingp'.
  */
 #define HEADGROWSIZE 1000
-char *ParseHeaders(inpart, subjectp, contentTypep, contentEncodingp,
-		   contentDispositionp, contentMD5p)
-struct part *inpart;
-char **subjectp, **contentTypep;
-enum encoding *contentEncodingp;
-char **contentDispositionp, **contentMD5p;
+char *ParseHeaders(struct part *inpart, char **subjectp, char **contentTypep, enum encoding *contentEncodingp, char **contentDispositionp, char **contentMD5p)
 {
     static int alloced = 0;
     static char *headers;
@@ -245,7 +238,7 @@ char **contentDispositionp, **contentMD5p;
 	    switch(next[1]) {
 	    case 's':
 	    case 'S':
-		if (!cistrncmp(next+2, "ubject:", 7)) {
+		if (!strncasecmp(next+2, "ubject:", 7)) {
 		    val = next+9;
 		    SkipWhitespace(&val);
 		    if (val) *subjectp = val;
@@ -254,20 +247,20 @@ char **contentDispositionp, **contentMD5p;
 
 	    case 'c':
 	    case 'C':
-		if (!cistrncmp(next+2, "ontent-type:", 12)) {
+		if (!strncasecmp(next+2, "ontent-type:", 12)) {
 		    val = next+14;
 		    SkipWhitespace(&val);
 		    if (val) *contentTypep = val;
 		}
-		else if (!cistrncmp(next+2, "ontent-transfer-encoding:", 25)) {
+		else if (!strncasecmp(next+2, "ontent-transfer-encoding:", 25)) {
 		    *contentEncodingp = parseEncoding(next+27);
 		}
-		else if (!cistrncmp(next+2, "ontent-disposition:", 19)) {
+		else if (!strncasecmp(next+2, "ontent-disposition:", 19)) {
 		    val = next+21;
 		    SkipWhitespace(&val);
 		    if (val) *contentDispositionp = val;
 		}
-		else if (!cistrncmp(next+2, "ontent-md5:", 11)) {
+		else if (!strncasecmp(next+2, "ontent-md5:", 11)) {
 		    val = next+13;
 		    SkipWhitespace(&val);
 		    if (val) *contentMD5p = val;
@@ -282,15 +275,14 @@ char **contentDispositionp, **contentMD5p;
  * Parse the Content-Transfer-Encoding: value pointed to by 's'.
  * Returns the appropriate encoding enum.
  */
-enum encoding parseEncoding(s)
-char *s;
+enum encoding parseEncoding(char *s)
 {
     SkipWhitespace(&s);
     if (s) {
 	switch (*s) {
 	case 'q':
 	case 'Q':
-	    if (!cistrncmp(s+1, "uoted-printable", 15) &&
+	    if (!strncasecmp(s+1, "uoted-printable", 15) &&
 		(isspace(s[16]) || s[16] == '(')) {
 		return enc_qp;
 	    }
@@ -298,7 +290,7 @@ char *s;
 
 	case '7':
 	case '8':
-	    if (!cistrncmp(s+1, "bit", 3) &&
+	    if (!strncasecmp(s+1, "bit", 3) &&
 		(isspace(s[4]) || s[4] == '(')) {
 		return enc_none;
 	    }
@@ -306,11 +298,11 @@ char *s;
 
 	case 'b':
 	case 'B':
-	    if (!cistrncmp(s+1, "ase64", 5) &&
+	    if (!strncasecmp(s+1, "ase64", 5) &&
 		(isspace(s[6]) || s[6] == '(')) {
 		return enc_base64;
 	    }
-	    if (!cistrncmp(s+1, "inary", 5) &&
+	    if (!strncasecmp(s+1, "inary", 5) &&
 		(isspace(s[6]) || s[6] == '(')) {
 		return enc_none;
 	    }
@@ -329,8 +321,7 @@ char *s;
  * getParm() and returned.
  */
 #define PARAMGROWSIZE 10
-params ParseContent(headerp)
-char **headerp;
+params ParseContent(char **headerp)
 {
     char *header;
     static int palloced = 0;
@@ -416,6 +407,10 @@ char **headerp;
 	}
 	if (*header) *header++ = '\0';
     }
+    
+    if (nparam == 0)
+       return 0;
+
     param[nparam] = 0;
     return param;
 }
@@ -426,9 +421,7 @@ char **headerp;
  * contains the value, or null if no such parameter was found.
  */
 #define VALUEGROWSIZE 100
-char *getParam(cParams, key)
-params cParams;
-char *key;
+char *getParam(params cParams, char *key)
 {
     static char *value;
     static int alloced = 0;
@@ -444,7 +437,7 @@ char *key;
 
     /* Find the named parameter */
     while (*cParams) {
-	if (!cistrncmp(key, *cParams, keylen) &&
+	if (!strncasecmp(key, *cParams, keylen) &&
 	    ((*cParams)[keylen] == '=' || isspace((*cParams)[keylen]))) break;
 	cParams++;
     }
@@ -466,6 +459,7 @@ char *key;
 	while (*from && *from != '\"') {
 	    if (!--left) {
 		alloced += VALUEGROWSIZE;
+		left += VALUEGROWSIZE;
 		value = xrealloc(value, alloced);
 		to = value + alloced - left - 2;
 	    }
@@ -482,6 +476,7 @@ char *key;
 	while (*from && !isspace(*from)) {
 	    if (!--left) {
 		alloced += VALUEGROWSIZE;
+		left += VALUEGROWSIZE;
 		value = xrealloc(value, alloced);
 		to = value + alloced - left - 2;
 	    }
@@ -498,8 +493,7 @@ char *key;
  * a null pointer if there was no such parameter.
  */
 char *
-getDispositionFilename(disposition)
-char *disposition;
+getDispositionFilename(char *disposition)
 {
     static char *value;
     static int alloced = 0;
@@ -542,7 +536,7 @@ char *disposition;
 	 * and look for another ";".  Otherwise skip it and
 	 * trailing whitespace.
 	 */
-	if (cistrncmp(disposition, "filename", 8) != 0) continue;
+	if (strncasecmp(disposition, "filename", 8) != 0) continue;
 	disposition += 8;
 	if (!isspace(*disposition) && *disposition != '=' &&
 	    *disposition != '(') {
@@ -552,7 +546,7 @@ char *disposition;
 	if (!disposition) return 0;
 
 	/* If we're looking at a ";", we found what we're looking for */
-	if (*disposition++ == '=') break;
+	if (*disposition++ == ';') break;
     }
 
     SkipWhitespace(&disposition);
@@ -571,6 +565,7 @@ char *disposition;
 	while (*disposition && *disposition != '\"') {
 	    if (!--left) {
 		alloced += VALUEGROWSIZE;
+		left += VALUEGROWSIZE;
 		value = xrealloc(value, alloced);
 		to = value + alloced - left - 2;
 	    }
@@ -588,6 +583,7 @@ char *disposition;
 	       *disposition != '(') {
 	    if (!--left) {
 		alloced += VALUEGROWSIZE;
+		left += VALUEGROWSIZE;
 		value = xrealloc(value, alloced);
 		to = value + alloced - left - 2;
 	    }
@@ -601,11 +597,7 @@ char *disposition;
 /*
  * Read and handle a message/partial object from the file 'inpart'.
  */
-handlePartial(inpart, headers, contentParams, extractText)
-struct part *inpart;
-char *headers;
-params contentParams;
-int extractText;
+int handlePartial(struct part *inpart, char *headers, params contentParams, int extractText)
 {
     char *id, *dir, *p;
     int thispart;
@@ -640,7 +632,7 @@ int extractText;
 	}
 	/* Store number of parts in reassembly directory */
 	sprintf(buf, "%sCT", dir);
-	partfile = fopen(buf, "w");
+	partfile = os_createnewfile(buf);
 	if (!partfile) {
 	    os_perror(buf);
 	    goto ignore;
@@ -673,7 +665,7 @@ int extractText;
 
     /* Create file to store this part */
     sprintf(buf, "%s%d", dir, thispart);
-    partfile = fopen(buf, "w");
+    partfile = os_createnewfile(buf);
     if (!partfile) {
 	os_perror(buf);
 	goto ignore;
@@ -685,8 +677,8 @@ int extractText;
 
 	while (*headers) {
 	    if (*headers == '\n' &&
-		(!cistrncmp(headers, "\ncontent-", 9) ||
-		 !cistrncmp(headers, "\nmessage-id:", 12))) {
+		(!strncasecmp(headers, "\ncontent-", 9) ||
+		 !strncasecmp(headers, "\nmessage-id:", 12))) {
 		/* Special case, skip header */
 		headers++;
 		while (*headers && (*headers != '\n' || isspace(headers[1]))) {
@@ -706,7 +698,7 @@ int extractText;
 		putc('\n', partfile);
 		break;
 	    }
-	    if (!cistrncmp(buf, "content-", 8) || !cistrncmp(buf, "message-id:", 11)) {
+	    if (!strncasecmp(buf, "content-", 8) || !strncasecmp(buf, "message-id:", 11)) {
 		docopy = 1;
 	    }
 	    else if (!isspace(*buf)) {
@@ -747,7 +739,7 @@ int extractText;
 
     /* We have everything, concatenate all the parts into a single file */
     sprintf(buf, "%sFULL", dir);
-    outfile = fopen(buf, "w");
+    outfile = os_createnewfile(buf);
     if (!outfile) {
 	os_perror(buf);
 	return 1;
@@ -798,8 +790,7 @@ int extractText;
 /*
  * Skip over a message object from the file 'inpart'.
  */
-ignoreMessage(inpart)
-struct part *inpart;
+int ignoreMessage(struct part *inpart)
 {
     while (part_getc(inpart) != EOF);
     return 0;
@@ -808,21 +799,17 @@ struct part *inpart;
 /*
  * Read and handle a multipart object from 'inpart'.
  */
-handleMultipart(inpart, contentType, contentParams, extractText)
-struct part *inpart;
-char *contentType;
-params contentParams;
-int extractText;
+int handleMultipart(struct part *inpart, char *contentType, params contentParams, int extractText)
 {
     char *id;
     char *defaultContentType = "text/plain";
     int isAppleDouble = 0;
 
     /* Components of multipart/digest have a different default content-type */
-    if (!cistrcmp(contentType, "multipart/digest")) {
+    if (!strcasecmp(contentType, "multipart/digest")) {
 	defaultContentType = "message/rfc822";
     }
-    if (!cistrcmp(contentType, "multipart/appledouble")) {
+    if (!strcasecmp(contentType, "multipart/appledouble")) {
 	isAppleDouble++;
     }
 
@@ -874,13 +861,11 @@ int extractText;
  * Handle a text message object from 'inpart' by saving it to
  * the temporary description file.
  */
-int handleText(inpart, contentEncoding)
-struct part *inpart;
-enum encoding contentEncoding;
+int handleText(struct part *inpart, enum encoding contentEncoding)
 {
     FILE *descfile;
 
-    descfile = fopen(TEMPFILENAME, "w");
+    descfile = os_createnewfile(TEMPFILENAME);
     if (!descfile) {
 	os_perror(TEMPFILENAME);
 	ignoreMessage(inpart);
@@ -909,14 +894,7 @@ enum encoding contentEncoding;
 /*
  * Read a message object from 'inpart' and save it to a file.
  */
-saveToFile(inpart, inAppleDouble, contentType, contentParams,
-	   contentEncoding, contentDisposition, contentMD5)
-struct part *inpart;
-int inAppleDouble;
-char *contentType;
-params contentParams;
-enum encoding contentEncoding;
-char *contentDisposition, *contentMD5;
+int saveToFile(struct part *inpart, int inAppleDouble, char *contentType, params contentParams, enum encoding contentEncoding, char *contentDisposition, char *contentMD5)
 {
     FILE *outfile = 0;
     int flags = 0;
@@ -924,7 +902,7 @@ char *contentDisposition, *contentMD5;
     char *outputmd5;
     char *fname;
 
-    if (!cistrncmp(contentType, "text/", 5)) {
+    if (!strncasecmp(contentType, "text/", 5)) {
 	suppressCR = 1;
     }
     else if (contentEncoding == enc_base64) {
@@ -1030,11 +1008,7 @@ static char index_64[256] = {
 };
 #define CHAR64(c)  (index_64[(unsigned char)(c)])
 
-from64(inpart, outfile, digestp, suppressCR)
-struct part *inpart;
-FILE *outfile;
-char **digestp;
-int suppressCR;
+void from64(struct part *inpart, FILE *outfile, char **digestp, int suppressCR)
 {
     int c1, c2, c3, c4;
     int DataDone = 0;
@@ -1089,10 +1063,7 @@ int suppressCR;
     if (digestp) *digestp = md5contextTo64(&context);
 }
 
-fromqp(inpart, outfile, digestp)
-struct part *inpart;
-FILE *outfile;
-char **digestp;
+void fromqp(struct part *inpart, FILE *outfile, char **digestp)
 {
     int c1, c2;
     MD5_CTX context;
@@ -1123,10 +1094,7 @@ char **digestp;
     if (digestp) *digestp=md5contextTo64(&context);
 }
 
-fromnone(inpart, outfile, digestp) 
-struct part *inpart;
-FILE *outfile;
-char **digestp;
+void fromnone(struct part *inpart, FILE *outfile, char **digestp)
 {
     int c;
     char ch;

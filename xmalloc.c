@@ -26,8 +26,7 @@
 #include <string.h>
 extern char *malloc(), *realloc();
 
-char *xmalloc (size)
-int size;
+char *xmalloc (int size)
 {
     char *ret;
 
@@ -39,9 +38,7 @@ int size;
 }
 
 
-char *xrealloc (ptr, size)
-char *ptr;
-int size;
+char *xrealloc (char *ptr, int size)
 {
     char *ret;
 
@@ -53,8 +50,7 @@ int size;
     exit(1);
 }
 
-char *strsave(str)
-char *str;
+char *strsave(char *str)
 {
     char *p = xmalloc(strlen(str)+1);
     strcpy(p, str);

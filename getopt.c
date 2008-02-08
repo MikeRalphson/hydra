@@ -60,12 +60,9 @@ char	*optarg;
 **  (i.e., comp.sources.unix before the great Usenet renaming).
 */
 int
-getopt(ac, av, opts)
-    int		ac;
-    char	*av[];
-    char	*opts;
+getopt(int ac, char **av, char *opts)
 {
-    extern char	*strchr();
+    extern char	*strchr(const char *, int);
     static int	i = 1;
     char	*p;
 

@@ -35,14 +35,13 @@
 #define BUFSIZE 1024 /* must be > PART_MAX_BOUNDARY_LEN */
 #define GROWBOUNDARY 20
 
-static int pendingboundary();
+static int pendingboundary(struct part *part);
 
 /*
  * Create, initialize, and return a new struct part pointer
  * for the input file 'infile'.
  */
-struct part *part_init(infile)
-FILE *infile;
+struct part *part_init(FILE *infile)
 {
     static struct part zeropart;
     struct part *newpart;
@@ -59,8 +58,7 @@ FILE *infile;
 /*
  * Close and free 'part'.
  */
-int part_close(part)
-struct part *part;
+int part_close(struct part *part)
 {
     fclose(part->infile);
     if (part->buf) free(part->buf);
@@ -71,8 +69,7 @@ struct part *part;
  * Return the multipart depth of 'part'.  Top-level is '0'.
  */
 int
-part_depth(part)
-struct part *part;
+part_depth(struct part *part)
 {
     return part->boundary_num;
 }
@@ -81,9 +78,7 @@ struct part *part;
  * Add to 'part' the multipart boundary 'boundary'.
  */
 int
-part_addboundary(part, boundary)
-struct part *part;
-char *boundary;
+part_addboundary(struct part *part, char *boundary)
 {
     /* Grow boundary array if necessary */
     if (part->boundary_num == part->boundary_alloc) {
@@ -114,8 +109,7 @@ char *boundary;
  * input character or EOF if at a boundary or end of file.
  */
 int
-part_fill(part)
-struct part *part;
+part_fill(struct part *part)
 {
     /* part_getc() decremented this before calling us, put it back */
     part->cnt++;
@@ -150,10 +144,7 @@ struct part *part;
  * returned.
  */
 char *
-part_gets(s, n, part)
-char *s;
-int n;
-struct part *part;
+part_gets(char *s, int n, struct part *part)
 {
     int c;
     char *p = s;
@@ -175,9 +166,7 @@ struct part *part;
  * character using the prot_ungetc() macro.
  */
 int
-part_ungets(s, part)
-char *s;
-struct part *part;
+part_ungets(char *s, struct part *part)
 {
     int len = strlen(s);
     int i;
@@ -213,8 +202,7 @@ struct part *part;
  * boundary of the current multipart.
  */
 int
-part_readboundary(part)
-struct part *part;
+part_readboundary(struct part *part)
 {
     int c;
     int sawfinal = 0;
@@ -259,8 +247,7 @@ struct part *part;
  * is positioned at a boundary.
  */
 static int
-pendingboundary(part)
-struct part *part;
+pendingboundary(struct part *part)
 {
     int bufleft;
     int i;

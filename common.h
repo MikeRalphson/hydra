@@ -38,3 +38,9 @@ typedef char **params;
 /* Flags for os_newtypedfile */
 #define FILE_BINARY 0x1		/* File should be opened in binary mode */
 #define FILE_INAPPLEDOUBLE 0x2	/* File was inside multipart/appledouble */
+
+
+#ifndef HAVE_STRCHR
+#define strchr index
+#define strrchr rindex
+#endif

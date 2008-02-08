@@ -22,6 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-extern char *xmalloc();
-extern char *xrealloc();
-extern char *strsave();
+extern char *xmalloc(int size);
+extern char *xrealloc(char *ptr, int size);
+extern char *strsave(char *str);

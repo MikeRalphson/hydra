@@ -244,6 +244,12 @@ void renameDescFile(char *fname, short vRefNum, long dirid)
     (void) remove(TEMPFILENAME);
 }
 
+FILE *os_createnewfile(fname) 
+char *fname;
+{
+    return fopen(fname, "w");
+}
+
 /*
  * Create a new file, with suggested filename "fname".
  * "fname" may have come from an insecure source, so clean it up first.

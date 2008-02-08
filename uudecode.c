@@ -29,10 +29,11 @@
 #include "common.h"
 #include "part.h"
 
-extern char *os_idtodir();
-extern FILE *os_newtypedfile();
+extern char *os_idtodir(char *id);
+extern FILE *os_newtypedfile(char *fname, char *contentType, int flags, params contentParams);
+extern FILE *os_createnewfile(char *fname);
 
-static FILE *startDescFile();
+static FILE *startDescFile(char *fname);
 
 
 /* Length of a normal uuencoded line, including newline */
@@ -70,10 +71,7 @@ static char bchar[256] = {
 /*
  * Read an input file, looking for data in split-uuencode format
  */
-handleUuencode(inpart, subject, extractText)
-struct part *inpart;
-char *subject;
-int extractText;
+int handleUuencode(struct part *inpart, char *subject, int extractText)
 {
     char *fname = 0, *tmpfname;
     int part, nparts;
@@ -248,7 +246,7 @@ int extractText;
 	    if (descfile) fclose(descfile);
 	    return saveUuFile(inpart, fname, part, nparts, buf);
 	}
-	else if (!cistrncmp(buf, "x-file-name: ", 13)) {
+	else if (!strncasecmp(buf, "x-file-name: ", 13)) {
 	    for (p = buf + 13; *p && !isspace(*p); p++);
 	    *p = '\0';
 	    strncpy(fnamebuf, buf+13, sizeof(fnamebuf)-1);
@@ -256,18 +254,18 @@ int extractText;
 	    fname = fnamebuf;
 	    continue;
 	}
-	else if (!cistrncmp(buf, "x-part: ", 8)) {
+	else if (!strncasecmp(buf, "x-part: ", 8)) {
 	    tmppart = atoi(buf+8);
 	    if (tmppart > 0) part = tmppart;
 	    continue;
 	}
-	else if (!cistrncmp(buf, "x-part-total: ", 14)) {
+	else if (!strncasecmp(buf, "x-part-total: ", 14)) {
 	    tmpnparts = atoi(buf+14);
 	    if (tmpnparts > 0) nparts = tmpnparts;
 	    continue;
 	}
 	else if (part == 1 && fname && !descfile &&
-		 !cistrncmp(buf, "x-file-desc: ", 13)) {
+		 !strncasecmp(buf, "x-file-desc: ", 13)) {
 	    if (descfile = startDescFile(fname)) {
 		fputs(buf+13, descfile);
 		fclose(descfile);
@@ -280,7 +278,7 @@ int extractText;
 	    if (descfile) fclose(descfile);
 	    return os_binhex(inpart, 1, 1);
 	}
-	else if (!cistrncmp(buf, "content-", 8)) {
+	else if (!strncasecmp(buf, "content-", 8)) {
 	    /*
 	     * HEURISTIC: If we see something that looks like a content-*
 	     * header, push it back and call the message parser.
@@ -373,7 +371,7 @@ int extractText;
 	if (wantdescfile && !descfile) {
 	    for (p = buf; *p && isspace(*p); p++);
 	    if (*p) {
-		if (!cistrncmp(p, "x-", 2)) {
+		if (!strncasecmp(p, "x-", 2)) {
 		    /*
 		     * Check for "X-foobar:"
 		     * If so, there probably will be a "X-File-Desc:" line
@@ -410,12 +408,7 @@ int extractText;
  * If firstline is non-null, it is written as the first line of the saved part
  */
 int
-saveUuFile(inpart, fname, part, nparts, firstline)
-struct part *inpart;
-char *fname;
-int part;
-int nparts;
-char *firstline;
+saveUuFile(struct part *inpart, char *fname, int part, int nparts, char *firstline)
 {
     char buf[1024];
     char *dir;
@@ -433,7 +426,7 @@ char *firstline;
     dir = os_idtodir(fname);
     if (!dir) return 1;
     sprintf(buf, "%s%d", dir, part);
-    partfile = fopen(buf, "w");
+    partfile = os_createnewfile(buf);
         if (!partfile) {
 	os_perror(buf);
 	return 1;
@@ -446,7 +439,7 @@ char *firstline;
 	    nparts = part;
 	    fclose(partfile);
 	    sprintf(buf, "%sCT", dir);
-	    partfile = fopen(buf, "w");
+	    partfile = os_createnewfile(buf);
 	    if (!partfile) {
 		os_perror(buf);
 	    }
@@ -494,11 +487,7 @@ char *firstline;
  * split-uuencoded data.
  */
 int
-parseSubject(subject, fnamep, partp, npartsp)
-char *subject;
-char **fnamep;
-int *partp;
-int *npartsp;
+parseSubject(char *subject, char **fnamep, int *partp, int *npartsp)
 {
     char *scan, *bak, *start;
     int part = -1, nparts = 0, hasdot = 0;
@@ -509,13 +498,13 @@ int *npartsp;
     /* Skip leading whitespace and other garbage */
     scan = subject;
     while (*scan == ' ' || *scan == '\t' || *scan == '-') scan++;
-    if (!cistrncmp(scan, "repost", 6)) {
+    if (!strncasecmp(scan, "repost", 6)) {
 	for (scan += 6; *scan == ' ' || *scan == '\t'
 	     || *scan == ':' || *scan == '-'; scan++);
     }
 
     /* Replies aren't usually data */
-    if (!cistrncmp(scan, "re:", 3)) return 1;
+    if (!strncasecmp(scan, "re:", 3)) return 1;
 
     /* Get filename */
 
@@ -524,8 +513,7 @@ int *npartsp;
      * representation syntax
      */
     do {
-	while (*scan != '\n' && isprint(*scan)
-	       && !isalnum(*scan) && *scan != '_') ++scan;
+	while (*scan != '\n' && !isalnum(*scan) && *scan != '_') ++scan;
 	*fnamep = start = scan;
 	while (isalnum(*scan) || *scan == '-' || *scan == '+' || *scan == '&'
 	       || *scan == '_' || *scan == '.') {
@@ -589,7 +577,7 @@ int *npartsp;
 	}
 
 	/* look for "6 parts" or "part 1" */
-	if (!cistrncmp("part", scan, 4)) {
+	if (!strncasecmp("part", scan, 4)) {
 	    if (scan[4] == 's') {
 		for (bak = scan; bak >= subject && !isdigit(*bak); bak--);
 		if (bak > subject) {
@@ -624,13 +612,12 @@ int *npartsp;
  * Return nonzero if 'line' should mark the end of a part-1 description
  */
 int
-descEnd(line)
-char *line;
+descEnd(char *line)
 {
     return !strncmp(line, "---", 3) ||
 	!strncmp(line, "#!", 2) ||
-	!cistrncmp(line, "part=", 5) ||
-	!cistrncmp(line, "begin", 5);
+	!strncasecmp(line, "part=", 5) ||
+	!strncasecmp(line, "begin", 5);
 }
 
 /*
@@ -638,8 +625,7 @@ char *line;
  * If a description file for 'fname' already exists, or if there is an
  * error, return a null pointer.
  */
-static FILE *startDescFile(fname)
-char *fname;
+static FILE *startDescFile(char *fname)
 {
     char buf[1024];
     char *dir;
@@ -657,7 +643,7 @@ char *fname;
 	return 0;
     }
 
-    descfile = fopen(buf, "w");
+    descfile = os_createnewfile(buf);
     if (!descfile) {
 	os_perror(buf);
 	return 0;
@@ -669,9 +655,7 @@ char *fname;
  * Decode the uuencoded file that is in 'nparts' pieces in 'dir'.
  */
 int
-uudecodefiles(dir, nparts)
-char *dir;
-int nparts;
+uudecodefiles(char *dir, int nparts)
 {
     int part;
     enum {st_start, st_inactive, st_decode, st_nextlast, st_last,
@@ -689,7 +673,7 @@ int nparts;
     sprintf(buf, "%s0", dir);
     infile = fopen(buf, "r");
     if (infile) {
-	outfile = fopen(TEMPFILENAME, "w");
+	outfile = os_createnewfile(TEMPFILENAME);
 	if (outfile) {
 	    while (fgets(buf, sizeof(buf), infile)) {
 		fputs(buf, outfile);
@@ -739,11 +723,11 @@ int nparts;
 
 		/* Guess the content-type of common filename extensions */
 		if (p = strrchr(fname, '.')) {
-		    if (!cistrcmp(p, ".gif")) contentType = "image/gif";
-		    if (!cistrcmp(p, ".jpg")) contentType = "image/jpeg";
-		    if (!cistrcmp(p, ".jpeg")) contentType = "image/jpeg";
-		    if (!cistrcmp(p, ".mpg")) contentType = "video/mpeg";
-		    if (!cistrcmp(p, ".mpeg")) contentType = "video/mpeg";
+		    if (!strcasecmp(p, ".gif")) contentType = "image/gif";
+		    if (!strcasecmp(p, ".jpg")) contentType = "image/jpeg";
+		    if (!strcasecmp(p, ".jpeg")) contentType = "image/jpeg";
+		    if (!strcasecmp(p, ".mpg")) contentType = "video/mpeg";
+		    if (!strcasecmp(p, ".mpeg")) contentType = "video/mpeg";
 		}
 
 		/* Create output file and start decoding */
@@ -842,9 +826,7 @@ int nparts;
 /*
  * Decode a uuencoded line to 'outfile'
  */
-uudecodeline(line, outfile)
-char *line;
-FILE *outfile;
+int uudecodeline(char *line, FILE *outfile)
 {
     int c, len;
 

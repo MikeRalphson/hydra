@@ -48,8 +48,7 @@ static int max_magiclen = 0;
  * Determins the format of the file "inputf".  The name
  * of the file format (or NULL on error) is returned.
  */
-char *magic_look(infile)
-FILE *infile;
+char *magic_look(FILE *infile)
 {
     int i, j;
     char buf[80];

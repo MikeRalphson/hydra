@@ -54,6 +54,6 @@ struct part {
 
 #define part_ungetc(c, s) ((s)->cnt++, ((s)->boundary_seen = (s)->boundary_num), (*--(s)->ptr = (c)))
 
-extern struct part *part_init();
-extern char *part_gets();
+extern struct part *part_init(FILE *infile);
+extern char *part_gets(char *s, int n, struct part *part);
 

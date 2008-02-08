@@ -33,9 +33,9 @@ extern int overwrite_files;
 extern int didchat;
 int quiet;
 
-main(argc, argv)
-int argc;
-char **argv;
+void usage(void);
+
+int main(int argc, char **argv)
 {
     int opt;
     FILE *file;
@@ -98,20 +98,18 @@ char **argv;
     exit(0);
 }
 
-usage() {
+void usage(void) {
     fprintf(stderr, "munpack version %s\n", MPACK_VERSION);
     fprintf(stderr, "usage: munpack [-f] [-q] [-C directory] [files...]\n");
     exit(1);
 }
 
-warn(s)
-char *s;
+void warn(char *s)
 {
     fprintf(stderr, "munpack: warning: %s\n", s);
 }
 
-chat(s)
-char *s;
+void chat(char *s)
 {
     didchat = 1;
     if (!quiet) fprintf(stdout, "%s\n", s);

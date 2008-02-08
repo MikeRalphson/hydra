@@ -25,9 +25,10 @@
 #include <stdio.h>
 #include <string.h>
 
-extern char *magic_look();
-extern char *os_genid();
-extern char *md5digest();
+extern char *magic_look(FILE *infile);
+extern char *os_genid(void);
+extern FILE *os_createnewfile(char *fname);
+extern char *md5digest(FILE *infile, long int *len);
 
 #define NUMREFERENCES 4
 
@@ -37,11 +38,7 @@ extern char *md5digest();
  * If 'applefile' is non-null, it is the first part of a multipart/appledouble
  * pair.
  */
-int encode(infile, applefile, fname, descfile, subject, headers, maxsize, typeoverride, outfname)
-FILE *infile, *applefile, *descfile;
-char *fname, *subject, *headers;
-long maxsize;
-char *typeoverride, *outfname;
+int encode(FILE *infile, FILE *applefile, char *fname, FILE *descfile, char *subject, char *headers, long int maxsize, char *typeoverride, char *outfname)
 {
     char *type;
     FILE *outfile;
@@ -106,8 +103,7 @@ char *typeoverride, *outfname;
 
 	/* Open output file */
 	if (numparts == 1) {
-	    outfile = fopen(outfname, "w");
-	    if (!outfile) os_perror(outfname);
+	    outfile = os_createnewfile(outfname);
 	}
 	else {
 #ifdef __riscos
@@ -116,10 +112,12 @@ char *typeoverride, *outfname;
 #else
 	    sprintf(buf, "%s.%02d", outfname, thispart);
 #endif
-	    outfile = fopen(buf, "w");
-	    if (!outfile) os_perror(buf);
+	    outfile = os_createnewfile(buf);
 	}
-	if (!outfile) return 1;
+	if (!outfile) {
+	    os_perror(buf);
+            return 1;
+        }
 	
 	msgid = os_genid();
 	fprintf(outfile, "Message-ID: <%s>\n", msgid);

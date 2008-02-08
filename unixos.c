@@ -29,8 +29,10 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <netdb.h>
+#include <fcntl.h>
 #include "xmalloc.h"
 #include "common.h"
+#include "part.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
@@ -50,7 +52,7 @@ static char *output_fname = 0;
 #define BADCHARS "!$&*()|\'\";<>[]{}?/`\\ \t"
 
 /* Generate a message-id */
-char *os_genid()
+char *os_genid(void)
 {
     static int pid = 0;
     static time_t curtime;
@@ -79,8 +81,7 @@ char *os_genid()
 }
 
 /* Create and return directory for a message-id */
-char *os_idtodir(id)
-char *id;
+char *os_idtodir(char *id)
 {
     static char buf[4096];
     char *p;
@@ -119,8 +120,7 @@ char *id;
  * We are done with the directory returned by os_idtodir()
  * Remove it
  */
-os_donewithdir(dir)
-char *dir;
+void os_donewithdir(char *dir)
 {
     char *p;
 
@@ -131,6 +131,25 @@ char *dir;
     rmdir(dir);
 }
 
+FILE *os_createnewfile(char *fname)
+{
+    int fd;
+    FILE *ret;
+     
+#ifdef O_EXCL
+    fd=open(fname, O_RDWR|O_CREAT|O_EXCL, 0644);
+#else
+    fd=open(fname, O_RDWR|O_CREAT|O_TRUNC, 0644);
+#endif
+
+    if (fd == -1)
+        return NULL;
+     
+    ret=fdopen(fd, "w");
+    return ret;
+}
+
+     
 /*
  * Create a new file, with suggested filename "fname".
  * "fname" may have come from an insecure source, so clean it up first.
@@ -138,11 +157,7 @@ char *dir;
  * "contentType" is passed in for use by systems that have typed filesystems.
  * "flags" contains a bit pattern describing attributes of the new file.
  */
-FILE *os_newtypedfile(fname, contentType, flags, contentParams)
-char *fname;
-char *contentType;
-int flags;
-params contentParams;
+FILE *os_newtypedfile(char *fname, char *contentType, int flags, params contentParams)
 {
     char *p;
     static int filesuffix=0;
@@ -159,6 +174,8 @@ params contentParams;
 
     /* Get rid of leading ~ or ~/ */
     while (*fname == '~' || *fname == '/') fname++;
+
+    while (!strncmp(fname, "../", 3)) fname += 3;
     
     /* Clean out bad characters, create directories along path */
     for (p=fname; *p; p++) {
@@ -189,7 +206,11 @@ params contentParams;
 	fname = buf;
     }
 
-    outfile = fopen(fname, "w");
+    if (overwrite_files)
+         outfile = fopen(fname, "w");
+    else
+         outfile = os_createnewfile(fname);
+    
     if (!outfile) {
 	perror(fname);
     }
@@ -222,8 +243,7 @@ params contentParams;
 /*
  * Close a file opened by os_newTypedFile()
  */
-os_closetypedfile(outfile)
-FILE *outfile;
+void os_closetypedfile(FILE *outfile)
 {
     fclose(outfile);
 }
@@ -232,10 +252,7 @@ FILE *outfile;
  * (Don't) Handle a BinHex'ed file
  */
 int
-os_binhex(inpart, part, nparts)
-struct part *inpart;
-int part;
-int nparts;
+os_binhex(struct part *inpart, int part, int nparts)
 {
     return 1;
 }
@@ -244,7 +261,7 @@ int nparts;
  * Warn user that the MD5 digest of the last file created by os_newtypedfile()
  * did not match that supplied in the Content-MD5: header.
  */
-os_warnMD5mismatch()
+void os_warnMD5mismatch(void)
 {
     char *warning;
 
@@ -258,8 +275,7 @@ os_warnMD5mismatch()
 /*
  * Report an error (in errno) concerning a filename
  */
-os_perror(file)
-char *file;
+void os_perror(char *file)
 {
     perror(file);
 }
