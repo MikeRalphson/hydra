@@ -1,0 +1,32 @@
+Mon Jun  1 11:00:41 CDT 1998
+Created by: Matt Roth
+
+1) To compile and install the hide program, type:
+
+   $ su - oracle
+   $ make hide
+   $ chmod 511 hide
+   $ mv hide $ORACLE_HOME/bin
+
+   Note: In some cases you may need to modify the hide.c
+         to correct the include statements for your platform.
+
+2) You should be able to use the hide_install.sh script to 
+   install the hide program.
+
+   $ su - oracle
+   $ hide_install.sh install
+
+   Note: By default hide will be installed for: sqlplus,
+         imp, exp, sqlload, and sqlldr
+
+3) When performing Oracle software upgrades or re-linking
+   Oracle you should uninstall the hide program.  The
+   Oracle*Installer sometimes gets confused if hide is
+   installed.
+
+   $ su - oracle
+   $ hide_install.sh uninstall
+
+
+Good Luck!!
