@@ -1,0 +1,1151 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      +--------------------------+
+                      !                          !
+                      !                          !
+                      !         ISSUE 1          !
+                      !                          !
+                      +--------------------------+
+
+
+
+
+                         EDIFICE - UTILISATION
+
+                               OF THE
+
+                       EDIFACT - RESRPT MESSAGE
+                       (RESALE REPORT MESSAGE)
+
+
+
+
+
+
+
+
+?:PAGE BREAK
+
+
+                                   - 1 -
+
+
+
+                TABLE OF CONTENTS                            PAGE
+                -----------------------------------------    ----
+
+                EDIFICE Functional Definition                  2
+
+                Explanatory Notes                              3
+
+                Message Diagram                                5
+
+                BGM  Beginning of Message                      6
+
+                RFF  References                                7
+
+                Segment Group 1                                8
+
+                NAD  Name and Address                          9
+
+                DTM  Date and Time                            10
+
+                CUX  Currency                                 11
+
+                UNS  Section Control                          12
+
+                Segment Group  2                              13
+
+                PIA  Product Identification                   14
+
+                Segment Group  3                              15
+
+                QTY  Quantity                                 16
+
+                Segment Group  4                              17
+
+                NAD  Name and Address                         18
+
+                RFF  References                               19
+
+                Segment Group  5                              20
+
+                API  Additional Price Information             21
+
+                CUX  Currency                                 23
+
+                UNS  Section Control                          24
+
+                Appendix 1 - Example Message
+
+
+?:PAGE BREAK
+
+
+                                   - 2 -
+
+
+EDIFICE FUNCTIONAL DEFINITION
+-----------------------------
+
+This message is designed to facilitate the exchange information between a
+Manufacturers Agent (commonly referred to as a Distributor, or Stockist) and
+the Manufacturer to identify those of the manufacturer's products which have
+been sold on to or credited to a third party customer during the specified time
+period(s) for which the message is transmitted.
+
+The minimum anticipated requirement is for the Agent to identify each product
+resold, the resale unit price and the total quantity sold of that product.
+
+Additional capability is included to facilitate transmission of end customer
+(or third party) identification information, and the quantity of product sold
+to that specified end customer.
+
+The resale message has also been designed to facilitate automatic processing of
+Credit claims from the Agent to the Manufacturer. Where specific invoice and
+resale price information, together with such additional information as may be
+required, is provided in the message in respect to any product and quantity
+declared,the resale message provides the required information for the
+manufacturer to process a credit claim.
+
+The ship & debit business practise is common in the Electronics Industry where
+the Agent (Distributor) will frequently hold a stock, purchased by the Agent at
+a fixed price, with assumptions regarding expected margins (profit on the
+resale).  For example, where the Agent sells at below his cost, or at a resale
+price below that to obtain the expected margin, the Manufacturer may
+give a dispensation to the Agent for that price and accept liability to support
+the Agent's margin via a pre-approved quote at time of Invoicing by the Agent
+to the end customer.
+
+
+
+
+REFERENCE DOCUMENTS
+-------------------
+
+Proposed UNSM Resale Report as sent to MD1       Dated 18/10/89
+Updated UNSM Resale Report as sent to MD1        Dated 17/ 9/90
+Standard Data Segment directory                  Version 90.1
+EDIFACT Standard Data Segments Directory         Version 90.1
+EDIFACT Codesets Directory                       Version 90.1
+UN/EDIFACT Rules ISO 9735
+EDIFICE Service Segments Utilisation
+
+
+
+?:PAGE BREAK
+
+
+                                  - 3 -
+
+
+EXPLANATORY NOTES
+-----------------
+
+The following codes are used to indicate, in a more detailed and precise way
+than EDIFACT, the usage of Segments and Data Elements in the EDIFICE
+Guidelines:
+
+                   EDIFACT                  EDIFICE
+
+                   Mandatory                Mandatory
+                   -                        -
+                   Conditional              Required
+                   -                        -
+                   Conditional              Advised
+                   -                        -
+                   Conditional              Depending
+                   -                        -
+                   Conditional              Special Agreement
+                   -                        -
+                   Conditional              Not used
+                   -                        -
+
+Mandatory = EDIFACT dictates that the Data Element or Segment must be present
+
+Required  = EDIFICE members agree that the Data Element or Segment must be
+            present at least once
+
+Advised   = EDIFICE advises that the Data Element or Segment should be used,
+            this is a recommendation only
+
+Depending = The presence of the the Data Element or Segment is conditioned.
+            Dependency will be explained at the approriate level of detail
+
+Special   = The Data Element or Segment will only be used if Agreement the two
+            trading partners have specifically agreed to do so in a Trading
+            Partner Agreement
+
+Not Used  = The Data Element or Segment will not be used by EDIFICE members
+
+Where a Composite Data Element is indicated as Not Used then, the column 'usage
+status' for the Component Data Elements will remain blank.
+
+The number of occurrences shown in the message diagram indicates the maximum
+number of occurrences for the EDIFICE utilisation.
+
+The EDIFICE useage status and number of occurrences for segments or segment
+groups will be represented analog to the representation of data elements
+
+eg.:  R3   The segment or -group is requried 3 times (fixed number)
+      R..3 The segment or -group is requried up to 3 times (maximum number)
+?:PAGE BREAK
+
+
+                                    - 4 -
+
+
+EXPLANATORY NOTES continued:
+----------------------------
+
+The following table indicates the number of integer and decimal digits to be
+used for numeric data elements when needed:
+
+              Numeric          Repr:          Integer     Decimals
+              Class            Digits         Digits
+
+              Weights          n..15            12           3
+              Cubes            n..9              5           4
+              Quantities       n..15            12           3
+              Unit prices      n..15            11           4
+              Amounts          n..15            12           3
+              Currency rates   n..12             6           6
+              Percentages      n..7              3           4
+              Tax rates        n..7              3           4
+?:PAGE BREAK
+
+
+                                    - 5 -
+
+
+RESALE REPORT MESSAGE DIAGRAM - EDIFICE USAGE
+---------------------------------------------
+
+
+UNH   Message Header                     M    1
+
+BGM   Beginning of Message               M    1
+
+RFF   References                         D    1
+
+ -------------- Segment Group  1 ----------------- R .. 2 ----+
+                                                              /
+NAD   Name and Address                   M    1  -------------+
+
+DTM   Date and Time Reference            A    2
+
+CUX   Currencies                         R .. 2
+
+UNS   Section Control                    M    1
+
+ -------------- Segment Group  2 ----------------- R..9999 ---+
+                                                              /
+PIA   Additional Product Id              M    1               /
+                                                              /
+ -------------- Segment Group  3 ----------------- R..9999 -+ /
+                                                            / /
+QTY   Quantity                           M    1             / /
+                                                            / /
+ -------------- Segment Group  4 ----------------- S    1 + / /
+                                                          / / /
+NAD   Name and Address                   M    1 ----------+ / /
+                                                            / /
+RFF   References                         R .. 2             / /
+                                                            / /
+ ------------- Segment Group  5 ------------------ A .. 3 + / /
+                                                          / / /
+API   Additional Price Information       M    1           / / /
+                                                          / / /
+CUX   Currencies                         D .. 2 --------------+
+
+UNS   Section Control                    M    1
+
+UNT   Message Trailer                    M    1
+
+?:PAGE BREAK
+
+
+                                    - 6 -
+
+
+BGM        BEGINNING OF MESSAGE
+-------------------------------
+
+ Function : To indicate the beginning of a message and to transmit the
+            identifying number, type and date of the document.
+ Usage    : M1
+ Remarks  : All references other than document number are in the RFF segment
+
+
+REF. !REP.     !NAME                      !EDIFICE UTILISATION
+-----!---------!--------------------------!-----------------------------------
+     !         !                          ! !
+C002 !        M!DOCUMENT                  !M!
+1001 !n3      C!  Document name, coded    !R! See Note 1
+1000 !an..35  C!  Document name           !N!
+     !         !                          ! !
+1004 !an..35  M!DOCUMENT NUMBER           !M! Unique document number
+     !         !                          ! ! created by the sender
+C031 !        M!DATE/TIME OF DOCUMENT     !M!
+2001 !n6      C!  Date, coded             !R! Date of document creation
+2002 !n4      C!  Time                    !N!
+     !         !                          ! !
+1225 !n..2    C!MESSAGE FUNCTION CODE     !N!
+     !         !                          ! !
+C008 !        C!PRIMARY REFERENCE         !N!
+1154 !an..35  M!  Reference number        ! !
+1153 !an..3   C!  Reference qualifier     ! !
+     !         !                          ! !
+C033 !        C!DATE/TIME OF REFERENCE    !N!
+2001 !n6      C!  Date, coded             ! !
+2002 !n4      C!  Time                    ! !
+     !         !                          ! !
+4343 !an..2    !RESPONSE TYPE, CODED      !N!
+
+
+
+      Note 1 :  DE 1001 '390' Resale (only)
+                        '391' Ship & Debit (Only)
+                        '392' Resale /Ship & Debit
+
+Use these codes until EDIFACT codes available.
+
+The document may be used to exchange Resales information only (390).  The
+document may be used to exchange Ship & Debit information only (391).  The
+document may be used to exchange both types of information simultaneously
+(392).
+?:PAGE BREAK
+
+
+                                   - 7 -
+
+
+ RFF        REFERENCES
+ ---------------------
+
+ Function : To identify reference documents associated with the Resale Report
+ Usage    : D1
+ Remarks  : Segment to be included when Ship & Debit information is present
+            That is when BGM DE 1001 is 391 or 392).
+
+
+REF. !REP.     !NAME                      !EDIFICE UTILISATION
+-----!---------!--------------------------!-----------------------------------
+     !         !                          ! !
+1153 !an..3   M!REFERENCE QUALIFIER       !M! 'DL' Debit Note Number
+     !         !                          ! !
+C274 !        M!REFERENCE                 !M!
+1154 !an..35  C!  Reference number        !R! Debit Note Number
+1156 !an..6   C!  Line number             !N!
+     !         !                          ! !
+C033 !        C!DATE/TIME OF REFERENCE    !R!
+2001 !n6      C!  Date, coded             !R! Debit Note Date
+2002 !n4      C!  Time                    !N!
+     !         !                          ! !
+
+
+?:PAGE BREAK
+
+
+                                   - 8 -
+
+
+SEGMENT GROUP 1
+---------------
+
+
+Function : A group of segments that identify Names and Addresses, relevant
+           to the whole Resale report.
+
+Usage    : R2
+Remarks  : ----
+
+
+
+
+
+ --------------- Segment Group  1 ---------------- R     2 -----+
+                                                                /
+NAD   Name and Address                     M    1 --------------+
+
+
+?:PAGE BREAK
+
+
+                                   - 9 -
+
+
+NAD         NAME AND ADDRESS
+----------------------------
+
+Function :  To identify the sender and recipient of the Resale Report.
+Usage    :  M1
+Remarks  :  ----
+
+
+
+REF. !REP.     !NAME                         ! EDIFICE UTILISATION
+-----!---------!-----------------------------!--------------------------------
+     !         !                             ! !
+3035 !an..3   M!PARTY QUALIFIER              !M! See Note 1
+     !         !                             ! !
+C082 !        C!PARTY IDENTIFICATION         !R!
+3039 !an..17  M!  Party identification, Coded!M! See Note 2
+1131 !an..3   C!  Code list identifier coded !R! See Note 3
+     !         !                             ! !
+C058 !        C!NAME & ADDRESS               !N!
+3124 !an..35  M!  Name & Address line        ! !
+3124 !an..35  C!  Name & Address line        ! !
+3124 !an..35  C!  Name & Address Line        ! !
+3124 !an..35  C!  Name & Address line        ! !
+3124 !an..35  C!  Name & Address line        ! !
+     !         !                             ! !
+C080 !        C!PARTY NAME                   !N!
+3036 !an..35  M!  Party name                 ! !
+3036 !an..35  C!  Party name                 ! !
+3036 !an..35  C!  Party name                 ! !
+     !         !                             ! !
+C059 !        C!STREET                       !N!
+3042 !an..35  M!  Street and number/p.o.box  ! !
+3042 !an..35  C!  Street and number/p.o.box  ! !
+3042 !an..35  C!  Street and number/p.o.box  ! !
+     !         !                             ! !
+3164 !an..35  C!CITY NAME                    !N!
+     !         !                             ! !
+3229 !an..9   C!COUNTRY SUB-ENTITY CODED     !N!
+     !         !                             ! !
+3251 !an..9   C!POST CODE                    !N!
+     !         !                             ! !
+3207 !a2      C!COUNTRY, CODED               !N!
+
+
+
+Note 1 : DE 3035 'DS' Distributor or 'MF' Manufacturer of Goods
+
+Note 2 : For example the Distributor's Account Code
+
+Note 3 : DE 1131 '94' Assigned by Manufacturer
+         This code to be used until EDIFACT make one available.
+?:PAGE BREAK
+
+
+                                    - 10 -
+
+
+DTM      DATE TIME REFERENCE
+----------------------------
+
+Function :  To specify the start & end dates of the reported period
+Usage    :  A2
+Remarks  :  When used the two dates must be provided
+
+
+REF. !REP.     !NAME                        ! EDIFICE UTILISATION
+-----!---------!----------------------------!--------------------------------
+     !         !                            ! !
+2005 !an..3   M!DATE/TIME QUALIFIER         !M! See Note 1
+     !         !                            ! !
+2001 !n6      C!DATE, CODED                 !R! Start Date or End Date
+     !         !                            ! !
+2002 !n4      C!TIME                        !N!
+     !         !                            ! !
+2461 !an3     C!TIME ZONE SPECIFIER, CODED  !N!
+
+
+Note 1 :  DE 2005 '090' Report Start date
+          DE 2005 '091' Report End date
+
+
+?:PAGE BREAK
+
+
+                                   - 11 -
+
+
+CUX         CURRENCIES
+----------------------
+
+
+Function :  To specify the currency used for any price information in the
+            Resale Report
+Usage    :  R..2
+Remarks  :  This segment may be overriden at the detail level Currency
+            Segment.
+
+
+REF. !REP.     !NAME                        !EDIFICE UTILISATION
+-----!---------!----------------------------!---------------------------------
+     !         !                            ! !
+C180 !        M!REFERENCE CURRENCY          !M!
+6345 !a3      M!  Currency, Coded           !M! See Note 1
+6343 !an..3   C!  Currency Qualifier        !R! See Note 2
+     !         !                            ! !
+C182 !        C!TARGET CURRENCY             !N!
+6345 !a3      M!  Currency, coded           ! !
+6343 !an..3   C!  Currency Qualifier        ! !
+     !         !                            ! !
+5402 !n..12   C!RATE OF EXCHANGE            !N!
+     !         !                            ! !
+6341 !an3     C!CURRENCY MKT EXCHANGE,CODED !N!
+     !         !                            ! !
+C034 !        C!DATE & TIME OF RATE         !N!
+2005 !an..3   M!  Date/Time Qualifier       ! !
+2001 !n6      C!  Date, coded               ! !
+2002 !n4      C!  Time                      ! !
+2461 !an3     C!  Time Specifier, Coded     ! !
+     !         !                            ! !
+
+
+Note 1 : See EDIFACT Codelist.  Using the 3 character code
+
+Note 2 : DE 6343 'EC' Currency of the invoice to the End Customer.
+                      This code to be used until EDIFACT makes a code
+                      available.
+                 'MC' Manufacturer's invoicing currency.
+                      This code to be used until EDIFACT makes a code
+                      available.
+                 'PC' Pricing Currency
+
+
+?:PAGE BREAK
+
+
+                               - 12 -
+
+
+UNS         SECTION CONTROL
+---------------------------
+
+Function :  Separates the Resale Report Header from the detail.
+Usage    :  M1
+Remarks  :  -----
+
+
+REF. !REP.     !NAME                        !EDIFICE UTILISATION
+-----!---------!----------------------------!--------------------------------
+     !         !                            ! !
+0081 !a1      M!Section Identification      !M! 'D'
+     !         !                            ! !
+
+?:PAGE BREAK
+
+
+                                  - 13 -
+
+SEGMENT GROUP 2
+---------------
+
+Function : A group of segments to identify the product to be reported
+Usage    : R..9999
+Remarks  : This loop is required at least once
+
+
+
+ -------------- Segment Group  2 ----------------- R..9999 ---+
+                                                              /
+PIA  Additional Product                 M    1                /
+                                                              /
+ -------------- Segment Group  3 ----------------- R..9999 -+ /
+                                                            / /
+QTY  Quantity                           M    1              / /
+                                                            / /
+ -------------- Segment Group  4 ----------------- S    1 + / /
+                                                          / / /
+NAD  Name and Address                   M    1 -----------+ / /
+                                                            / /
+RFF  References                         R .. 2              / /
+                                                            / /
+ -------------- Segment Group  5 ----------------- A .. 3 + / /
+                                                          / / /
+API  Additional Price Information       M    1            / / /
+                                                          / / /
+CUX  Currencies                         D    2 ---------------+
+
+?:PAGE BREAK
+
+
+                                 - 14 -
+
+
+PIA    ADDITIONAL PRODUCT
+-------------------------
+
+Function : To uniquely identify the product or service that has been resold
+Usage    : M1
+Remarks  : This segment is the primary identification of the product
+
+
+REF. !REP.     !NAME                        !EDIFICE UTILISATION
+-----!---------!----------------------------!-!------------------------------
+     !         !                            ! !
+4347 !an1     M!PRODUCT ID FUNCTION CODE    !M! See Note 1
+     !         !                            ! !
+C198 !        M!PRODUCT IDENTIFICATION      !M!
+7020 !an..35  M!  Article number identifier !M! Manufacturer Part Number
+7023 !an..3   M!  Article Number            !M! 'MG' Manufacturer Part Number
+     !         !                            ! !
+C198 !        C!PRODUCT IDENTIFICATION      !S!
+7020 !an..35  M!  Article number identifier !M! Distributer Part Number
+7023 !an..3   M!  Article number            !M! 'DP'  Distributor Part Number
+     !         !                            ! !
+C198 !        C!PRODUCT IDENTIFICATION      !N!
+7020 !an..35  M!  Article number identifier ! !
+7023 !an..3   M!  Article number            ! !
+     !         !                            ! !
+C198 !        C!PRODUCT IDENTIFICATION      !N!
+7020 !an..35  M!  Article number identifier ! !
+7023 !an..3   M!  Article number            ! !
+     !         !                            ! !
+C198 !        C!PRODUCT IDENTIFICATION      !N!
+7020 !an..35  M!  Article number identifier ! !
+7023 !an..3   M!  Article number            ! !
+     !         !                            ! !
+
+
+Note 1 : DE 4347 '5' Primary Identifier.
+                     This code to be used until EDIFACT makes a code
+                     available
+?:PAGE BREAK
+
+
+                                - 15 -
+
+
+SEGMENT GROUP 3
+---------------
+
+Function : A group of segments to identify the quantity of product to be
+           reported
+Usage    : R..9999
+Remarks  : At least one loop for each product identification
+
+
+
+ -------------- Segment Group  3 ----------------- R..9999 -+
+                                                            /
+QTY   Quantity                          M    1              /
+                                                            /
+ -------------- Segment Group  4 ----------------- S    1 + /
+                                                          / /
+NAD   Name and Address                  M    1 -----------+ /
+                                                            /
+RFF   References                        R .. 2              /
+                                                            /
+ -------------- Segment Group  5 ----------------- A .. 3 + /
+                                                          / /
+API   Additional Price Information      M    1            / /
+                                                          / /
+CUX   Currencies                        D .. 2 --------------
+
+
+?:PAGE BREAK
+
+
+                                  - 16 -
+
+
+QTY      QUANTITY
+-----------------
+
+Function : To Specify the quantity of product resold
+Usage    : M1
+Remarks  : -----
+
+
+REF. !REP.     !NAME                         !EDIFICE UTILISATION
+-----!---------!-----------------------------!--------------------------------
+     !         !                             ! !
+C186 !        M!QUANTITY INFORMATION         !M!
+6063 !an..3   C!  Quantity Qualifier         !R! See Note 1
+6060 !n..15   M!  Quantity                   !M! Quantity
+6411 !an..3   C!  Measure Unit Specifier     !R! See Note 2
+     !         !                             ! !
+
+Note 1 : DE 6063 '47' Invoiced Quantity
+                 '71' Credited Quantity (Note 3)
+                      Where the qualifier '71' is used this implies that the
+                      quantity value stated will have a negative effect,
+                      though conveyed in the message as positive
+
+
+Note 2 : DE 6411 'EA' is the Measure Unit Specifier to be used.
+                      Other codes from the DE 6411 code list may be used by
+                      special trading partner agreement (eg. Metres for
+                      Electrical Cable)
+
+
+Note 3 : DE 6063 '71' Credited Quantity
+                      This code to be used until EDIFACT make one available
+?:PAGE BREAK
+
+
+                                  - 17 -
+
+
+SEGMENT GROUP 4
+---------------
+
+Function : A group of segments that identify Names and Adresses relevant
+           to end-customer to whom the product has been resold
+Usage    : S1
+Remarks  : One loop for each Product/Quantity.
+
+
+ -------------- Segment Group  4 ----------------- S    1 +
+                                                          /
+NAD   Name and Address                  M    1 -----------+
+
+
+
+
+Note : This segment group is used by Special Agreement, as is the following
+       NAD segment implementation.  Reference should be made to the legal
+       position between trading partners in the country of trading.
+
+?:PAGE BREAK
+
+
+                                - 18 -
+
+
+ NAD         NAME AND ADDRESS
+ ----------------------------
+
+Function :  To identify the end-customer.  For ship & Debit transactions the
+            same name is required.  Else the name is not obligatory.
+Usage    :  M1
+Remarks  :  For Ship and Debit transactions then the Name (DE C080) is
+            required, in all other cases it is not obligatory.
+
+REF. !REP.     !NAME                         !EDIFICE UTILISATION
+-----!---------!-----------------------------!--------------------------------
+     !         !                             ! !
+3035 !an..3   M!PARTY QUALIFIER              !M! 'IV'   Invoicee
+     !         !                             ! !
+C082 !        C!PARTY IDENTIFICATION         !R!
+3039 !an..17  M!  Party identification, coded!M! End-Customer Identification
+1131 !an..3   C!  Code list identifier coded !R! Note 1
+     !         !                             ! !
+C058 !        C!NAME & ADDRESS               !N!
+3124 !an..35  M!  Name and Address line      ! !
+3124 !an..35  C!  Name and Address line      ! !
+3124 !an..35  C!  Name and Address Line      ! !
+3124 !an..35  C!  Name and Address line      ! !
+3124 !an..35  C!  Name and Address line      ! !
+     !         !                             ! !
+C080 !        C!PARTY NAME                   !S!
+3036 !an..35  M!  Party name                 !M! End-Customer Company Name
+3036 !an..35  C!  Party name                 !N!
+3036 !an..35  C!  Party name                 !N!
+     !         !                             ! !
+C059 !        C!STREET                       !N!
+3042 !an..35  M!  Street and number/p.o.box  ! !
+3042 !an..35  C!  Street and number/p.o.box  ! !
+3042 !an..35  C!  Street and number/p.o.box  ! !
+     !         !                             ! !
+3164 !an..35  C!CITY NAME                    !N!
+     !         !                             ! !
+3229 !an..9   C!COUNTRY SUB-ENTITY CODED     !N!
+     !         !                             ! !
+3251 !an..9   C!POST CODE                    !S! End-Customer Post code
+     !         !                             ! !
+3207 !a2      C!COUNTRY, CODED               !S! See EDIFACT codelist
+     !         !                             ! !
+
+Note 1 : DE 1130 '93' Assigned by Distributor.
+                      This code to be used until EDIFACT make
+                      one available.
+
+?:PAGE BREAK
+
+
+                                 - 19 -
+
+
+RFF        REFERENCES
+---------------------
+
+Function : To give a reference number assigned to the resale.
+Usage    : R..2
+Remarks  : -----
+
+
+REF. !REP.     !NAME                      !EDIFICE UTILISATION
+-----!---------!--------------------------!-----------------------------------
+     !         !                          ! !
+1153 !an..3   M!REFERENCE QUALIFIER       !M! See Note 1
+     !         !                          ! !
+C274 !        M!REFERENCE                 !M!
+1154 !an..35  C!  Reference number        !R! Reference Number
+1156 !an..6   C!  Line number             !N!
+     !         !                          ! !
+C033 !        C!DATE/TIME OF REFERENCE    !R!
+2001 !n6      C!  Date                    !R! Reference Date
+2002 !n4      C!  Time                    !N!
+
+
+
+Note 1 :  DE 1153 'CD' Credit Note Number
+                       This is a credit note sent to the end customer
+                  'IV' Invoice Number
+                       This is an Invoice sent
+                  'BD' Bid Number (Quote or reference number)
+
+
+?:PAGE BREAK
+
+
+                                 - 20 -
+
+
+SEGMENT GROUP 5
+---------------
+
+Function : A group of segments to identify the prices of product for the
+           quantities
+Usage    : M1
+Remarks  : ----
+
+
+
+ ------------- Segment Group  5 ------------------ A .. 3 +
+                                                          /
+API   Additional Price Information      M    1            /
+                                                          /
+CUX   Currencies                        D .. 2 -----------+
+
+
+
+
+
+
+
+?:PAGE BREAK
+
+
+                                   - 21 -
+
+
+API         ADDITIONAL PRICE INFORMATION
+----------------------------------------
+
+ Function :  To provide information concerning price of products resold.
+             trade, quantity, date /period or amount.
+ Usage    :  M1
+ Remarks  :  -----
+
+REF. !REP.     !NAME                          !EDIFICE UTILISATION
+-----!---------!------------------------------!-------------------------------
+     !         !                              ! !
+4043 !an2     C!CLASS OF TRADE, CODED         !N!
+     !         !                              ! !
+C262 !        C!REASON FOR CHANGE             !N!
+4295 !an..2   C!  Change Reason,Coded         ! !
+4294 !an..35  C!  Change Reason               ! !
+     !         !                              ! !
+C134 !        C!REFERENCE PRICE INFORMATION   !R!
+5110 !n..15   M!  Unit Price                  !M! Unit Price
+5375 !an..2   C!  Price Type Code             !N!
+5387 !an..3   C!  Price Type Qualifier        !R! See Note 1
+5284 !n..9    C!  Unit Price Basis            !R! Unit Price Basis Value
+6411 !an..3   C!  Measure Unit Specifier      !R! See Note 2
+     !         !                              ! !
+C138 !        C!PRICE MULTIPLIER INFORMATION  !N!
+5394 !n..12   M!  Price Multiplier            ! !
+5393 !an..3   C!  Price Multiplier identifier ! !
+     !         !                              ! !
+C280 !        C!QUANTITY/RANGE                !N!
+6060 !n..15   M!  Quantity                    ! !
+6060 !n..15   C!  Quantity                    ! !
+6410 !an..3   C!  Measure Unit specifier      ! !
+     !         !                              ! !
+C282 !        C!PERIOD                        !N!
+2001 !n6      M!  Date, coded                 ! !
+2001 !n6      C!  Date, coded                 ! !
+     !         !                              ! !
+C284 !        C!AMOUNT/RANGE                  !C!
+5383 !an..3   C!  Amount type code            ! !
+5004 !n..15   M!  Monetary amount             ! !
+5004 !n..15   C!  Monetary amount             ! !
+     !         !                              ! !
+
+Note 1 : DE 5387 'RES' for Resale Price.
+                 'DIS' for Distributor Price.
+                 'SBP' for Special Buy Price.
+                       This code to be used until EDIFACT provide one.
+
+Depending on the quantity specified as resale or ship & debit the codes &
+prices should be used in the following way
+
+                          RES     DIS    SBP
+            Resale         R       S      S
+            Ship & Debit   R       R      R
+?:PAGE BREAK
+
+
+                                    - 22 -
+
+
+API    ADDITIONAL PRICE INFORMATION continued
+---------------------------------------------
+
+
+The DIS (Distributor Price is a value determined in the Manufacturer/
+Distributor trading partnership. It may be the original product buy price,
+average product buy price, etc.
+
+Note 2 : DE 6411 'EA' is the Measure Unit Specifier to be used.
+                      Other codes from the DE 6411 code list may be used by
+                      special trading partner agreement (eg. Metres for
+                      Electrical Cable)
+?:PAGE BREAK
+
+
+                                   - 23 -
+
+
+CUX         CURRENCIES
+----------------------
+
+Function :  To specify the currency used for price information at detail
+            resale report level
+Usage    :  D..2
+Remarks  :  To be used where the detail currency is different from the
+            resale report currency in the heading section
+
+
+REF. !REP.     !NAME                        !EDIFICE UTILIZATION
+-----!---------!----------------------------!---------------------------------
+     !         !                            ! !
+C180 !        M!REFERENCE CURRENCY          !M!
+6345 !a3      M!  Currency,Coded            !M! See Note 1
+6343 !an..3   C!  Currency Qualifier        !R! See Note 2
+     !         !                            ! !
+C182 !        C!TARGET CURRENCY             !N!
+6345 !a3      M!  Currency,coded            ! !
+6343 !an..3   C!  Currency Qualifier        ! !
+     !         !                            ! !
+5402 !n..12   C!RATE OF EXCHANGE            !N!
+     !         !                            ! !
+6341 !an3     C!CURRENCY MKT EXCHANGE,CODED !N!
+     !         !                            ! !
+C034 !        C!DATE & TIME OF RATE         !N!
+2005 !an..3   M!  Date/Time Qualifier       ! !
+2001 !n6      C!  Date                      ! !
+2002 !n4      C!  Time                      ! !
+2461 !an3     C!  Time Specifier, coded     ! !
+     !         !                            ! !
+
+
+Note 1 : See EDIFACT Codelist
+
+Note 2 : DE 6343 'EC' Currency of the invoice to the End Customer, used with a
+                      Resale Price
+                      This code to be used until EDIFACT makes a code
+                      available.
+                 'MC' Manufacturer's invoicing currency, used with a
+                      Distributor Price & a Special Buy Price.
+                      This code to be used until EDIFACT makes a code
+                      available.
+                 'PC' Pricing Currency, for all Detail Price values
+
+?:PAGE BREAK
+
+
+                                  - 24 -
+
+
+UNS    SECTION CONTROL
+----------------------
+
+Function :  To separate, detail and summary section of a message
+Usage    :  M1
+Remarks  :  -----
+
+
+REF. !REP.     !NAME                        !EDIFICE UTILISATION
+-----!---------!----------------------------!--------------------------------
+     !         !                            ! !
+0081 !a1      M!Section Identification      !M! 'S'
+
+
+
+?                                    - 1 -
+
+APPENDIX
+--------
+
+Example of a Resale only message sent from Distributor to Manufacturer
+
+
+   UNB+UNOA:1+5013546002745:UK21+5013546000475:UK21+890502:1250+000002++
+   RESRPT++++1'
+
+   UNH+0000020002+RESRPT:0:0:UN:ED'
+
+   BGM+390+RESRPT+890502'
+
+   NAD+DS+MACRO:94'
+
+   NAD+MF+TEXAS:94'
+
+   DTM+090+890401'
+
+   DTM+091+890430'
+
+   CUX+GBP:PC'
+
+   UNS+D'
+
+   PIA+5+SN74J05:MG+1B05JO5:DP'
+
+   QTY+47:100:EA'
+
+   NAD+IV+23409ICL:93'
+
+   RFF+IV+9874608+890413'
+
+   API+++0.34:RES:1:EA'
+
+   PIA++SN74J80:VP'
+
+   QTY+47:150:EA'
+
+   NAD+IV+23409ICL:93'
+
+   RFF+IV+9874608+890413'
+
+   API+++0.12:RES:1:EA'
+
+   UNS+S'
+
+   UNT+19+0000020002'
+
+   UNZ+1+000002'
+?APPENDIX 1
+----------
+
+                                    - 2 -
+
+
+Example of a Ship & Debit only message sent from Distributor to Manufacturer
+
+
+   UNB+UNOA:1+5013546002745:UK21+5013546000475:UK21+890502:1250+000002++
+   RESRPT++++1'
+
+   UNH+0000020002+RESRPT:0:0:UN:ED'
+
+   BGM+391+RESRPT+890502'
+
+   NAD+DS+MACRO:94'
+
+   NAD+MF+TEXAS:94'
+
+   DTM+090+890401'
+
+   DTM+091+890430'
+
+   CUX+GBP:SC'
+
+   CUX+USD:IN'
+
+   UNS+D'
+
+   PIA+5+SN74J05:MG+1B05J05:DP'
+
+   QTY+47:100:EA'
+
+   NAD+IV+23467IBM:93++IBM++++P5 5ER'
+
+   RFF+IV+987608+890413'
+
+   API+++0.34:RES:1:EA'
+
+   PIA++SN74J80:VP'
+
+   QTY+47:150:EA'
+
+   NAD+IV+23467IBM:93++IBM++++P5 5ER'
+
+   RFF+IV+9874608+890413'
+
+   API+++0.12:RES:1:EA'
+
+   UNS+S'
+
+   UNT+19+0000020002'
+
+   UNZ+1+000002'
+?APPENDIX 1
+----------
+
+                                    - 3 -
+
+   UNB+UNOA:1+5013546002745:UK21+5013546000475:UK21+890502:1250+000002++
+   RESRPT++++1'
+
+   UNH+0000020002+RESRPT:0:0:UN:ED'
+
+   BGM+393+RESRPT+890502'
+
+   NAD+DS+MACRO:94'
+
+   NAD+MF+TEXAS:94'
+
+   DTM+090+890401'
+
+   DTM+901+890430'
+
+   CUX+GBP:PC'
+
+   UNS+D'
+
+   PIA+5+SN74J05:MG+1B05J05:DP'
+
+   QTY+47:100:EA'
+
+   NAD+IV+23409ICL:93++INTERNATIONAL COMPUTERS LTD++++ST127FJ'
+
+   RFF+IV+9874608+809413'
+
+   API+++0.34:RES:1:EA'
+
+   API+++0.30:DIS:1:EA'
+
+   API+++0.29:SBP:1:EA'
+
+   PIA++SN74J80:VP'
+
+   QTY+47:150:EA'
+
+   NAD+IV+23467IBM:93++IBM++++P5 5ER'
+
+   RFF+IV+9874608+890413'
+
+   API+++0.12:RES:1:EA'
+
+   API+++0.11:DIS:1:EA'
+
+   API+++0.11:SBP:1:EA'
+
+   UNS+S'
+
+   UNT+19+0000020002'
+
+   UNZ+1+000002'
+?
+
