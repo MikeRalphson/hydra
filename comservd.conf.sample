@@ -1,0 +1,110 @@
+#------------------------------------------------------------------------
+#
+# $Id: comservd.conf.sample,v 1.10 2002/05/15 02:37:57 bsd Exp $
+#
+# comservd.conf
+#
+#------------------------------------------------------------------------
+#
+# Sample Configuration file for comservd
+#
+# This file contains comserv local-mode commands that get executed
+# at startup time.  Any command that can be issued at a local mode
+# prompt can be issued from this file, and can be used to set up
+# which ports you want to provide connections for.
+#
+#------------------------------------------------------------------------
+
+# default directory for device log files
+logdir /usr/local/comserv/log
+
+# default directory from which to make symlinks to /dev pty's
+devdir /usr/local/comserv/dev
+
+# a control port that we can use to issue commands to the daemon
+ctl comserv comserv
+
+# don't block the remote side of a connection if there is no one
+# listening locally
+set default options=noblock
+
+# Serve up our own local serial ports com1 and com2 at ports 2100 and
+# 2200 respectively
+#
+#       DevId      Device  Com#  TCP/IP Port  LogFile Spec
+#       -----  ----------  ----  -----------  ------------
+#serve  com1   /dev/cuaa0     1         2100  nolog
+#serve  com2   /dev/cuaa1     2         2200  nolog
+
+
+# Provide connections to a 16 port Xyplex device 
+#
+#    DevId  Device   TermSrv   Termsrv        TermSrv          LogFile
+#           Symlink  Hostname   Port #  TCP/IP Port #             Spec
+#    -----  -------  --------  -------  -------------  ---------------
+#add    x1       x1   xyplex2        1           2100  log
+#add    x2       x2   xyplex2        2           2200  nolog
+#add    x3       x3   xyplex2        3           2300  x3_log_file.log
+#add    x4       x4   xyplex2        4           2400  /var/log/x4.log
+#add    x5       x5   xyplex2        5           2500  nolog
+#add    x6       x6   xyplex2        6           2600  nolog
+#add    x7       x7   xyplex2        7           2700  nolog
+#add    x8       x8   xyplex2        8           2800  nolog
+#add    x9       x9   xyplex2        9           2900  nolog
+#add   x10      x10   xyplex2       10           3000  nolog
+#add   x11      x11   xyplex2       11           3100  nolog
+#add   x12      x12   xyplex2       12           3200  nolog
+#add   x13      x13   xyplex2       13           3300  nolog
+#add   x14      x14   xyplex2       14           3400  nolog
+#add   x15      x15   xyplex2       15           3500  nolog
+#add   x16      x16   xyplex2       16           3600  nolog
+
+# Device Options: Default = nologall, nologhex, buffer, nowait
+#
+#   [no]logall - Do [don't] log both sides of the connection.  Logall
+#                is appropriate for debugging a data stream.  Nologall
+#                (default) is appropriate for system consoles and most
+#                other applications.
+#
+#   [no]loghex - Do [don't] log data in hex and ascii and identify the
+#                data source.  Loghex is appropriate for debugging data
+#                streams when used in combination with logall.
+#                Nologhex is appropriate when only ascii data is
+#                present such as when logging a system console.
+#
+#   [no]block  - Do [don't] block the producing side if the receiving
+#                side can't receive the data immediately.  Noblock is
+#                appropriate when the producing side must be able to
+#                continue even if there is not a process on the
+#                receiving side to see the data.  Examples include
+#                logging a system console.  Block is appropriate when
+#                reliable transmission of all data between the local
+#                and remote sides is required, even if it means
+#                blocking one of the sides until the other can consume
+#                the data.
+#
+#     [no]wait - Do [don't] wait for data on the local side before
+#                initiating a connection to the remote side.  Nowait is
+#                appropriate if the remote side functions independently
+#                of the local side, such as with a system console.
+
+# set x1 options = logall, loghex, nobuffer
+
+
+# To use the comserv, x1, x2, and x3 entries with 'tip', for example,
+# add the following lines to /etc/remote:
+#
+#   comserv:dv=/usr/local/comserv/dev/comserv:br#9600:pa=none
+#   x1:dv=/usr/local/comserv/dev/x1:br#9600:pa=none
+#   x2:dv=/usr/local/comserv/dev/x2:br#9600:pa=none
+#   x3:dv=/usr/local/comserv/dev/x3:br#9600:pa=none
+#
+
+# With the above entries in /etc/remote, you can type 'tip x1', for
+# example, to connect to the device on serial port 1 of xyplex2.  All
+# I/O to that port will be logged to the file /usr/local/comserv/log/x1.
+#
+# Additionally, the "comserv" entry allows you to 'tip comserv' and
+# connect directly with the comserv daemon's command interface.  This
+# allows you to issue commands and query status.
+#

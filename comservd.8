@@ -1,0 +1,471 @@
+.\" Copyright 2000, 2001, 2002 Brian S. Dean <bsd@bsdhome.com>
+.\" All Rights Reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY BRIAN S. DEAN ``AS IS'' AND ANY
+.\" EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL BRIAN S. DEAN BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+.\" OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+.\" BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+.\" LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+.\" USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+.\" DAMAGE.
+.\"
+.\" $Id: comservd.8,v 1.17 2002/05/15 02:37:57 bsd Exp $
+.\"
+.Dd May 14, 2002
+.Dt COMSERVD 8
+.Os BSD 4.4
+.Sh NAME
+.Nm comservd
+.Nd make network terminal server serial ports accessible via /dev
+.Sh SYNOPSIS
+.Nm comservd
+.Op Fl f Ar config_file
+.Sh DESCRIPTION
+The
+.Nm comservd
+program provides a facility to access network terminal server serial
+ports, such as those available on Xyplex terminal server models, via
+.Pa /dev
+device file entries.  This allows programs such as
+.Xr tip 1
+to access devices connected to the terminal server serial ports.
+.Nm Comservd
+can also serve local serial ports to remote systems via the network,
+turning the local system into a network terminal server with respect
+to its own local serial ports.  At startup,
+.Nm
+loads and executes commands from its configuration file.
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl f Ar config_file
+At startup, read configuration commands from the file
+.Pa config_file
+instead of the default
+.Pa /usr/local/etc/comservd.conf .
+.El
+.Pp
+The configuration file should contain the commands required to tell
+comservd what terminal server ports to attach to and name the local
+device file used to access those ports.  It also contains which local
+serial ports the localhost will serve out via the network, making it
+function like a terminal server itself.  See below for a few examples.
+The complete list of valid commands are:
+.Bl -tag -width indent
+.It Xo
+.Cm add
+.Ar devid
+.Ar devname
+.Ar host
+.Ar hwport
+.Ar tcpport
+.Ar logspec
+.Xc
+Add a remote endpoint to local enpoint mapping.  This associates the
+device file named by
+.Ar devname
+with the terminal server, serial port, and tcp port named by
+.Ar host ,
+.Ar hwport
+and
+.Ar tcpport .
+If
+.Ar devname
+is not an absolute path, it is taken relative to the path specified by the
+.Cm devdir
+command.
+.Nm
+creates the device name named by
+.Ar devname
+which is a symbolic link to the slave side of a
+.Xr pty 4
+device.
+.Nm
+opens the master side of the
+.Xr pty 4
+pair.
+.Ar Logspec
+may be
+.Cm log ,
+.Cm nolog ,
+or a filename.
+If
+.Cm log
+is used, the log file is the same as was specified for the device
+id and is relative to the path specified by the
+.Cm logdir
+command.
+If anything other than
+.Cm log
+or 
+.Cm nolog
+is used, it is treated as a filename.
+Relative filenames are treated relative to the path specified by the
+.Cm logdir
+command.
+.It Xo
+.Cm ctl
+.Ar devid
+.Ar devname
+.Xc
+Add a control port to local enpoint mapping.  This allows one to
+establish a direct local command mode connection to the daemon on the
+specified device file named by
+.Ar devname .
+.It Xo
+.Cm devdir
+.Ar path
+.Xc
+Specify the default path to place symbolic links to
+.Xr pty 4
+device files.
+The
+.Cm devdir
+path is the default location for relative device names specified in
+the
+.Ar devname
+field of the
+.Cm add
+command.
+.It Xo
+.Cm endpoints
+.Xc
+List local and remote endpoint connections.
+.It Xo
+.Cm help ,
+.Cm ?
+.Xc
+Print a list of valid commands.
+.It Xo
+.Cm list
+.Xc
+List all device ids and their corresponding device and log files.
+.It Xo
+.Cm logdir
+.Ar path
+.Xc
+Specify the default path to place session log files.
+The
+.Cm logdir
+path is the default directory to place log files specified in the
+.Ar logspec
+field of the
+.Cm add
+command.
+Each connection may have a log file to which the data flow is logged.
+.It Xo
+.Cm quit
+.Xc
+Quit command mode and disconnect from the daemon.
+.It Xo
+.Cm restart
+.Xc
+Restart the daemon.
+.It Xo
+.Cm serve
+.Ar devid
+.Ar devname
+.Ar hwport
+.Ar tcpport
+.Ar logspec
+.Xc
+Specify a local serial port to serve over the network at the specified
+TCP port.  The serial port is named by
+.Ar devname ,
+with the serial port number specified by
+.Ar hwport .
+The
+.Ar hwport
+value is actually not used by
+.Nm
+except for display purposes.
+The TCP port number is given by
+.Ar tcpport .
+If
+.Ar devname
+is not an absolute path, it is taken relative to the path specified by the
+.Cm devdir
+command.
+Unlike the
+.Cm add
+command,
+.Cm serve
+does not create the device named by
+.Ar devname .
+Instead,
+.Ar devname
+must be a real device and must already exist.
+.Nm
+creates a network socket and binds it to the specified TCP port and
+then listens for incoming connections.  When an incoming connection is
+made,
+.Nm
+passes data between the network connection and the local device.
+.Ar Logspec
+serves the same purpose as in the
+.Cm add
+command above.
+.It Xo
+.Cm set
+.Ar devid
+.Ar parmeter =
+.Ar value
+.Xc
+Set operation parameters for the device referenced by device named by
+.Ar devid .
+The special
+.Ar devid
+.Ic global
+refers to parameters that affect all connections.
+Valid
+.Ar paremeter
+values are:
+.Bl -tag -width indent
+.It Xo
+.Cm options
+.Xc
+Valid values for the
+.Cm options
+parameter are:
+.Bl -tag -width indent
+.It Xo
+.Cm wait ,
+.Cm nowait
+.Xc
+.Cm wait
+for data on the local side before initiating a connection to the
+remote side.
+.Cm nowait
+is appropriate if the remote side functions independently of the local
+side, such as when the remote side is a serial system console.  The
+default is
+.Cm nowait .
+.It Xo
+.Cm block ,
+.Cm noblock
+.Xc
+.Cm block
+the producing side if the receiving side can't receive the data
+immediately.
+When
+.Cm noblock
+is in effect, data is lost if the receiver is not ready.  Regardless
+of the whether
+.Cm block
+or
+.Cm noblock
+is in effect, all data is properly written in the log file if logging
+is enabled.
+.Cm noblock
+is appropriate when the producing side must be able to continue even
+if there is not a process on the receiving side to see the data.
+Examples include when the remote side is a serial system console.
+.Cm block
+is appropriate when reliable transmission of all data between the
+local and remote sides is required, even if it means blocking one of
+the sides until the other can consume the data.  The default is
+.Cm block .
+.It Xo
+.Cm logall ,
+.Cm nologall
+.Xc
+When
+.Cm logall
+is specified,
+.Nm
+will log all data originating from the local side of the connection as
+well as data originating from the remote side of the connection to the
+log file.  When
+.Cm nologall
+is in effect,
+.Nm
+will log only data originating from the remote side of the connection.  Use
+.Cm nologall
+for most cases.  The
+.Cm logall
+option is useful when debugging a protocol stream between two devices.
+The default is
+.Cm nologall .
+.It Xo
+.Cm loghex ,
+.Cm nologhex
+.Xc
+When
+.Cm loghex
+is in effect,
+.Nm
+will write its data to the log file in hexadecimal format as well as
+provide an ASCII representation and identify the source of the data,
+either
+.Cm remote
+or
+.Cm local .
+.Cm loghex
+is useful for debugging a protocol stream between two devices.
+.Cm nologhex
+is appropriate when only ASCII data is present.  The default is
+.Cm nologhex .
+.El
+.It Xo
+.Cm verbose
+.Xc
+The
+.Cm verbose
+variable takes a numeric value, and the higher the value, the more
+verbose the output of
+.Nm .
+At present, any setting of 1 or greater will enable all informational
+messages.
+.El
+.Pp
+The special device id
+.Cm global
+is available for setting global options which are used as defaults for
+new device ids.
+.It Xo
+.Cm show
+.Ar devid
+.Xc
+Show operational settings for the device id specified by
+.Ar devid .
+.It Xo
+.Cm shutdown
+.Xc
+Shutdown the server.
+.It Xo
+.Cm version
+.Xc
+Display the revision timestamp.  This information is very useful to
+include in bug reports.
+.Pp
+.Sh EXAMPLES
+.Nm
+can be used for many applications.  One of the more common applications is using
+.Nm
+to provide access to serial system consoles.  A Xyplex MAXserver 1600
+has 16 serial ports which can be connected to the serial console of
+your system.  The example below provides the setup:
+.Bd -unfilled -offset indent
+#
+# /usr/local/etc/comservd.conf
+# Configuration file for serial consoles
+# Host terminal server is named xyplex1
+
+# Specify default directory for device log files and for device symlinks.
+logdir /usr/local/comserv/log
+devdir /usr/local/comserv/dev
+
+# Define a control port
+ctl comserv comserv
+
+# Don't block the remote side of a connection if there is no one
+# listening locally.
+set default options=noblock
+
+# Serve up our own com1 and com2 serial ports for remote access at
+# ports 2100 and 2200 respectively.
+#
+#       DevId      Device  Com#  TCP/IP Port  LogFile Spec
+#       -----  ----------  ----  -----------  ------------
+serve   com1   /dev/cuaa0     1         2100  nolog
+serve   com2   /dev/cuaa1     2         2200  nolog
+
+# Add device nodes to point to the first 4 serial ports of 'xyplex1'.
+#
+#   DevId  Device   TermSrv   Termsrv        TermSrv  LogFile
+#          Symlink  Hostname   Port #  TCP/IP Port #     Spec
+#   -----  -------  --------  -------  -------------  -------
+add  srv1     srv1   xyplex1        1           2100  log
+add  srv2     srv2   xyplex1        2           2200  log
+add  srv3     srv3   xyplex1        3           2300  log
+add  srv4     srv4   xyplex1        4           2400  log
+.Ed
+.Pp
+Add the following entries to
+.Pa /etc/remote :
+.Bd -unfilled -offset indent
+comserv:dv=/usr/local/comserv/dev/comserv:br#9600:pa=none
+srv1:dv=/usr/local/comserv/dev/srv1:br#9600:pa=none
+srv2:dv=/usr/local/comserv/dev/srv2:br#9600:pa=none
+srv3:dv=/usr/local/comserv/dev/srv3:br#9600:pa=none
+srv4:dv=/usr/local/comserv/dev/srv4:br#9600:pa=none
+.Ed
+.Pp
+One can now use a program like
+.Xr tip 1
+to connect to comserv and issue commands or connect to srv1-srv4 and
+attach to the console of the respective machine.  The console log
+files are placed in
+.Pa /usr/local/comserv/log/srv1-srv4 .
+Additionally, one can connect to TCP ports 2100 and 2200 of the system
+running
+.Nm
+and to access its local serial ports.
+.Pp
+To use
+.Nm
+to debug the data stream between two devices, set up the device entry
+as follows in
+.Pa /usr/local/etc/comservd.conf :
+.Bd -unfilled -offset indent
+ctl comserv comserv
+add ppp ppp xyplex1 1 2100 log
+set ppp options=block,logall,loghex
+.Ed
+.Pp
+The log file
+.Pa /usr/local/comserv/log/ppp
+will contain the data transmission log of the form:
+.Bd -unfilled
+L  7e ff 7d 23 c0 21 7d 21  7d 21 7d 20 7d 2e 7d 25  |~.}#.!}!}!} }.}%|
+L  7d 26 89 4b f6 e5 7d 27  7d 22 7d 28 7d 22 7d 2b  |}&.K..}'}"}(}"}+|
+L  f3 7e                                             |.~              |
+R  7e ff ff 7d 23 c0 21 7d  21 7d 25 7d 20 7d 34 7d  |~..}#.!}!}%} }4}|
+R  22 7d 26 7d 20 7d 2a 7d  20 7d 20 7d 25 7d        |"}&} }*} } }%}  |
+R  26 7d 25 7d 24 92 70 7d  27 7d 22 7d 28 7d 22 bb  |&}%}$.p}'}"}(}".|
+R  c8 7e                                             |.~              |
+L  7e ff 7d 23 c0 21 7d 21  7d 21 7d 20 7d 2e 7d 25  |~.}#.!}!}!} }.}%|
+L  7d 26 89 4b f6 e5 7d 27  7d 22 7d 28 7d 22 7d 2b  |}&.K..}'}"}(}"}+|
+L  f3 7e                                             |.~              |
+.Ed
+.Pp
+Data prefixed with
+.Cm L
+originate from the local endpoint, while data prefixed with
+.Cm R
+originate from the remote side.
+.Pp
+.Sh FILES
+.Bl -tag -width /usr/local/etc/comservd.conf.sample -compact
+.It Pa /usr/local/etc/comservd.conf
+Configuration file.
+.It Pa /usr/local/etc/comservd.conf.sample
+Sample configuration file.
+.It Pa /usr/local/comserv/log
+Default directory for session logs.
+.It Pa /usr/local/comserv/dev
+Default directory for device symlinks.
+.Sh SEE ALSO
+.Xr pty 4 ,
+.Xr remote 5 ,
+.Xr syslogd 8 ,
+.Xr tip 1
+.Sh AUTHORS
+Brian S. Dean <bsd@FreeBSD.org>
+.Sh BUGS
+Please send bug reports to bsd@FreeBSD.org.
