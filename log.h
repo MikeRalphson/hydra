@@ -35,7 +35,7 @@
 #include <stdarg.h>
 
 
-#define CONSOLE 0   /* 0 = syslog, 1 = fprintf(stderr,...) */
+#define CONSOLE 1   /* 0 = syslog, 1 = fprintf(stderr,...) */
 
 
 int fdprintf (int fd, char * format, ...);

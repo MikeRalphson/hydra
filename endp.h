@@ -33,6 +33,7 @@
 #define __endp_h__
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 /*
  * need forward declarations
@@ -76,8 +77,10 @@ int        endp_init         (void);
 void       init_endp         (ENDPOINT * e);
 ENDPOINT * new_endp          (void);
 int        endp_attr         (ENDPOINT * e);
-void       cleanup           (ENDPOINT * r, fd_set * masterrd, 
-                              fd_set * masterwr, int * maxfd);
+void       cleanup           (ENDPOINT * r, 
+	fd_set * masterrd, 
+	fd_set * masterwr, 
+	int * maxfd);
 int        sock_bind_service (char * service, int srvport);
 int        lread             (int fd, char * buf, int len);
 int        set_blocking      (ENDPOINT * e, int blocking, int doretry);

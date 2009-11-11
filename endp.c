@@ -42,7 +42,8 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <sys/types.h>
-#include <sys/sysctl.h>
+//#include <sysctl.h>
+#include <termio.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -149,7 +150,8 @@ int endp_attr(ENDPOINT * e)
 #endif
   termios.c_cc[VEOL2] = _POSIX_VDISABLE;
   termios.c_cc[VERASE] = _POSIX_VDISABLE;
-  termios.c_cc[VWERASE] = _POSIX_VDISABLE;
+  //termios.c_cc[VWERASE] = _POSIX_VDISABLE;
+  termios.c_cc[VWERSE] = _POSIX_VDISABLE;
   termios.c_cc[VKILL] = _POSIX_VDISABLE;
   termios.c_cc[VREPRINT] = _POSIX_VDISABLE;
   termios.c_cc[VINTR] = _POSIX_VDISABLE;
@@ -159,10 +161,11 @@ int endp_attr(ENDPOINT * e)
   termios.c_cc[VSTART] = _POSIX_VDISABLE;
   termios.c_cc[VSTOP] = _POSIX_VDISABLE;
   termios.c_cc[VLNEXT] = _POSIX_VDISABLE;
-  termios.c_cc[VDISCARD] = _POSIX_VDISABLE;
+  //termios.c_cc[VDISCARD] = _POSIX_VDISABLE;
+  termios.c_cc[VDISCRD] = _POSIX_VDISABLE;
   termios.c_cc[VMIN] = _POSIX_VDISABLE;
   termios.c_cc[VTIME] = _POSIX_VDISABLE;
-  termios.c_cc[VSTATUS] = _POSIX_VDISABLE;
+  //termios.c_cc[VSTATUS] = _POSIX_VDISABLE;
 #if 0
   termios.c_cc[VMIN]  = 1;
   termios.c_cc[VTIME] = 0;

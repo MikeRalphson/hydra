@@ -10,7 +10,7 @@ TARGET         = comservd
 USE_LIBEFENCE  = NO
 USE_DMALLOC    = NO
 
-PREFIX        ?= /usr/local
+PREFIX         = /usr/local
 BINDIR         = ${PREFIX}/sbin
 CONFDIR        = ${PREFIX}/etc
 RCDIR          = ${PREFIX}/etc/rc.d
@@ -19,7 +19,7 @@ CONFIGFILE     = comservd.conf.sample
 RCFILE         = comservd.sh.sample
 MANUAL         = comservd.8
 
-INSTALL        = /usr/bin/install -c -o root -g wheel
+INSTALL        = /usr/bin/install -O root -G system
 
 #
 # Enabling -DENABLE_TELNET_PORT will cause comservd to accept incoming
@@ -29,27 +29,18 @@ INSTALL        = /usr/bin/install -c -o root -g wheel
 # probably don't want to strip the binary at install time, so remove "-s"
 # from INSTALL_PROGRAM below as well.
 #
-# CFLAGS = -g -Wall -DENABLE_TELNET_PORT
+CC = gcc
+CFLAGS = -g
+#CFLAGS = -g -Wall -DENABLE_TELNET_PORT
 #
 
-INSTALL_PROGRAM = ${INSTALL} -m 555 -s
-INSTALL_DATA    = ${INSTALL} -m 444
-INSTALL_SCRIPT  = ${INSTALL} -m 555
+INSTALL_PROGRAM = ${INSTALL} -M 555 -S
+INSTALL_DATA    = ${INSTALL} -M 444
+INSTALL_SCRIPT  = ${INSTALL} -M 555
 INSTALL_MANUAL  = ${INSTALL_DATA}
 
 
-.if ($(USE_LIBEFENCE) == YES)
-CFLAGS  += -DLIBEFENCE
-LIBDIRS += -L/usr/local/lib
-LIBS    += -lefence
-.endif
-
-.if ($(USE_DMALLOC) == YES)
-LIBDIRS += -L/usr/local/lib
-LIBS    += -ldmalloc
-.endif
-
-.include "Makefile.inc"
+include Makefile.inc
 
 all :
 	make depend

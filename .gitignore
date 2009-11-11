@@ -1,0 +1,4 @@
+*.o
+CVS
+comservd
+comservd.conf

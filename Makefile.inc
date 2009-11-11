@@ -4,7 +4,7 @@
 first_rule : all
 
 
-.depend : .PHONY
+.depend : 
 	@echo "# dependencies generated `date +'%D %T'`"        >  .depend
 	@echo                                                   >> .depend
 	@echo "# SUBDIR=`pwd`"                                  >> .depend
@@ -31,6 +31,4 @@ first_rule : all
 	done
 	@echo                                                   >> .depend
 
-.if exists(.depend)
-.include ".depend"
-.endif
+include .depend

@@ -55,6 +55,7 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 
 #include "comserv.h"
 #include "endp.h"
@@ -319,8 +320,8 @@ int print_module_versions(FILE * outf, char * timestamp)
   int i;
   int rc;
   int maxtime;
-  struct tm t;
   time_t now;
+  struct tm t;
   
   maxtime = 0;
   for (i=0; i<N_MODULES; i++) {
@@ -338,7 +339,9 @@ int print_module_versions(FILE * outf, char * timestamp)
       t.tm_mday = d;
       t.tm_mon  = m-1;
       t.tm_year = y-1900;
-      now = timegm(&t);
+      //now = timegm(&t); //org
+      now = mktime(&t); //mer
+
       if (now > maxtime) {
         maxtime = now;
         strcpy(timestamp, datetime);
