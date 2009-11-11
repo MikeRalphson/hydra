@@ -1,0 +1,112 @@
+<html><head>
+
+<!-- base href="http://www.bsdhome.com/comserv/" --><title>COMSERV</title></head><body background="COMSERV_files/a.htm">
+
+<h1>COMSERV</h1>
+
+<ul>
+  <li> <p> <b>The latest version of COMSERV is 1.4.3, which is
+           available for download here: <a href="comserv-1.4.3.tar.gz">comserv-1.4.3.tar.gz</a>.</b>
+
+  </p></li><li> <p> <b>View the <a href="CHANGELOG">CHANGE LOG</a> for
+           COMSERV.</b>
+</p></li></ul>
+
+
+<img src="xyplex.jpg">
+
+<p> COMSERV is a program that runs on Unix (developed on FreeBSD) that
+    allows you to talk to a network terminal server such as a Xyplex
+    MAXserver 1600.  The handy thing about this program is that the
+    client side of the connection does not need to know anything about
+    how to talk to the terminal server.  COMSERV handles the
+    connection details.  Thus, you can use existing programs like
+    <tt>tip</tt> to talk to devices attached to your network terminal
+    server without modification.
+
+</p><p> Also, you can use COMSERV to turn your Unix computer itself into a
+    terminal server and serve up its own local serial ports over the
+    network for remote systems to access.  This is handy if you have
+    several systems lying around and you want to utilize devices
+    attached to their serial ports.
+
+</p><p> My primary motivation for writing this program was to expand the
+    I/O capabilities of my FreeBSD home computer.  I have many serial
+    devices that I want to connect to my PC which include my modem,
+    Palm Pilot, GPS, various micro-controllers, my EEPROM programmer,
+    and other computers and printers.  But with only two serial ports
+    on my PC, I became annoyed at having to reach around the back of
+    my computer and swap cables every time I wanted to plug in a
+    different device.  [I think all inventions are the product of the
+    laziness of the inventor :-)] So I searched eBay and found a
+    couple of these Xyplex terminal servers that looked promising, I
+    bid on them, got them, and began hacking.
+
+</p><p> The only problem with using this type of device for serial
+    expansion, is that if you use a program like <tt>tip</tt> on Unix
+    (<tt>tip</tt> is a very basic but functional program to connect
+    directly to a serial port), it expects to be able to open the
+    serial port by opening a <tt>/dev/</tt><i>xyz</i> device file that
+    corresponds to a real serial device.  The Xyplex, on the other
+    hand, communicates to the Unix system via an ethernet network.  In
+    order to talk to one of the serial ports on the Xyplex, you need
+    to establish a TCP/IP connection between your Unix computer and
+    the Xyplex device at a particular TCP port.  The TCP port you
+    connect to determines which Xyplex serial port you connect to.
+    For the Xyplex 1600, serial port 1 is TCP port 2100, serial port
+    2, is TCP port 2200 and so on.
+
+</p><p> Unfortuneately, <tt>tip</tt>, and programs like it, have no idea
+    how to establish a TCP/IP connection to the Xyplex in order to
+    transfer data to and from a serial device connected to the Xyplex.
+
+</p><p> This is what COMSERV does.  COMSERV creates a set of pseudo-tty
+    device files that are palatable to <tt>tip</tt> and other
+    programs.  COMSERV opens the master side of the pseudo terminal
+    and the client program (<tt>tip</tt> in this case) opens the slave
+    side.  Data written on the slave endpoint comes out on the master
+    endpoint and vice-versa.  This mechanism establishes a connection
+    between the client program and COMSERV.  COMSERV then uses TCP/IP
+    to establish a connection to the network terminal server.
+
+</p><p> Thus, data originating from the client program is written to the
+    slave tty where is read by COMSERV.  COMSERV then writes the data
+    to the network socket to the Xyplex, which then passes it on to
+    the designated serial port.  Data originating from the serial
+    device attached to the Xyplex takes the reverse path.
+
+</p><p> Only one instance of COMSERV is required to be running on your
+    system to handle all of your network terminal servers (it can
+    handle as many terminal servers and ports as the speed and
+    resources of your system allows).  COMSERV is designed to handle
+    many connections in this fashion, and does so by multiplexing
+    between them using asynchronous device and socket I/O.
+
+</p><p> While I wrote COMSERV to talk to a Xyplex MAXserver 1600, it
+    should work with other manufacturers' products as long as they
+    follow a similar API.  The Xyplex devices that I have are 16 port
+    devices that connect serial devices to an ethernet network.
+
+</p><p> If COMSERV sounds useful to you, feel free to download and use it.
+    The program is provided in source form, so you will need to
+    extract it and compile it.  If you use FreeBSD, simply do the
+    following:
+
+</p><pre>% cd /usr/ports/comms/comserv
+% make install
+</pre>
+
+<p> I use it on FreeBSD 4-STABLE.  I don't currently know of any
+    outstanding bugs, but if you find and fix any bugs, please send me
+    your fixes so that others can benefit from them as well.
+
+</p><p> If you do decide to use COMSERV, please note the accompanying
+    license.  In a nutshell, you can use it without restriction as
+    long as you credit me and keep the copyright notice intact.  If
+    you happen to like it, feel free to send your thanks, letting me
+    know.  If you don't like it, let me know why, perhaps I can
+    improve it.  If you improve it, please send me your changes and
+    I'll see about integrating them so that others can benefit from
+    your improvements.
+
+</p></body></html>

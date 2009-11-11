@@ -1,0 +1,111 @@
+
+$Id: CHANGELOG,v 1.1 2002/06/22 21:05:06 bsd Exp $
+
+Approximate change log for COMSERV by version
+
+----------------------------------------------------------------------
+
+Version 1.4.3 :
+
+  * Implement a power of 2 backoff and retry for failing connections
+    with a maximum 10 minute wait.  This keeps from filling up the
+    logs with failed repeated attempts.
+
+
+Version 1.4.2 :
+
+  * Better error handling when the local tcp/ip port is already in use
+
+
+Version 1.4.1 :
+
+  * Fixes for serving local serial ports
+
+
+Version 1.4.0 :
+
+  * Add the ability to serve up local serial ports to remote
+    processes, effectively turning the system running comservd into a
+    terminal server
+
+
+Version 1.3.6 :
+
+  * Allow setting of global default options in the config file
+
+
+Version 1.3.6 :
+
+  * Increase the size of the pty name-space that we check
+
+
+Version 1.3.4 :
+
+  * Fixes for non-blocking connects
+
+
+Version 1.3.3 :
+
+  * Enhanced status update
+
+  * Use non-blocking socket connects so that we don't get held up by a
+    terminal server that is down
+
+
+Version 1.3.2 :
+
+  * Throttle back the rate of connections when starting up - some old
+    Xyplexes crash if you connect to them too quickly
+
+  * Allow CTRL-b to send a break character
+
+
+Version 1.3.1 :
+
+  * Add default device directory, default log directory directive
+
+  * Add daemon restart capability via a command or SIGHUP
+
+  * Add a 'version' command
+
+  * Add indivual connection logging in ASCII as well as HEX
+
+  * Add a per port 'block' / 'noblock' option which blocks the
+    transmitter if the reciever is not listening
+
+  * Add ability to see the buffered data of a session
+
+  * Better buffering
+
+  * Periodic retry of failed connections
+
+  * Add ability to use an alternate config file
+
+  * Manual page updates
+
+  * Sample config file updates
+
+
+Version 1.2.1 :
+
+  * Internal code cleanup - more efficient memory usage
+
+
+Version 1.2 :
+
+  * Install sample scripts instead of replacing existing production
+    scripts
+
+  * Manual page updates
+
+  * Sample config file updates
+
+
+Version 1.0.1 :
+
+  * Makefile changes
+
+
+Version 1.0.0 :
+
+  * Initial public release
